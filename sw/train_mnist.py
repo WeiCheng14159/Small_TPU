@@ -1,3 +1,7 @@
+import os
+# Set the GPU index you want to use (0-based)
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+
 import tensorflow as tf
 from tensorflow.keras import datasets
 
