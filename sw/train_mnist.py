@@ -34,3 +34,5 @@ tb_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 model.fit(x_train, y_train, batch_size=128, epochs=30,
           validation_data=(x_test, y_test),
           callbacks=[tb_callback])
+
+model.save_weights('lenet5_qnn.h5')

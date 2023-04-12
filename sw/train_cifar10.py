@@ -33,3 +33,5 @@ tb_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 # Train the model
 model.fit(train_images, train_labels, epochs=30,
           validation_data=(test_images, test_labels), callbacks=[tb_callback])
+
+model.save('vgg16_qnn.h5')
