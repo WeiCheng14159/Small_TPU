@@ -7,13 +7,14 @@ from tensorflow.keras import datasets
 
 from models.lenet5 import lenet5, lenet5_qnn
 from models.vgg16 import vgg16, vgg16_qnn
+from models.mynet import mynet, mynet_qnn
 
 # Define the input shape of the network
 input_shape = (28, 28, 1)
 # Define the number of classes
 num_classes = 10
 
-model = lenet5_qnn(input_shape=input_shape, num_classes=num_classes)
+model = mynet_qnn(input_shape=input_shape, num_classes=num_classes)
 
 # Load the MNIST dataset and preprocess the data
 (x_train, y_train), (x_test, y_test) = datasets.mnist.load_data()
@@ -35,4 +36,4 @@ model.fit(x_train, y_train, batch_size=128, epochs=30,
           validation_data=(x_test, y_test),
           callbacks=[tb_callback])
 
-model.save_weights('lenet5_qnn.h5')
+model.save_weights('mynet_qnn.h5')
