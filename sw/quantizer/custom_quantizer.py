@@ -1,9 +1,10 @@
+import tensorflow as tf
 import tensorflow_model_optimization as tfmot
 
 Quantizer = tfmot.quantization.keras.quantizers.Quantizer
 
 
-class FixedRangeQuantizer(Quantizer):
+class CustomQuantizer(Quantizer):
     # Example quantizer which clips tensors in a fixed range.
 
     def build(self, tensor_shape, name, layer):
@@ -22,7 +23,7 @@ class FixedRangeQuantizer(Quantizer):
         """
         range_var = layer.add_weight(
             name + '_range',
-            initializer=keras.initializers.Constant(6.0),
+            initializer=tf.keras.initializers.Constant(6.0),
             trainable=False)
 
         return {

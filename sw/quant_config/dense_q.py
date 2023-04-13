@@ -1,9 +1,18 @@
 import tensorflow_model_optimization as tfmot
 
+### Custom quantizers ###
+from quantizer.fixed_point_quantizer import FixedPointQuantizer
+from quantizer.custom_quantizer import CustomQuantizer
+
+### List of built-in quantizers ###
 # Quantize tensor based on range the last batch of values.
 LastValueQuantizer = tfmot.quantization.keras.quantizers.LastValueQuantizer
 # Quantize tensor based on a moving average of values across batches.
 MovingAverageQuantizer = tfmot.quantization.keras.quantizers.MovingAverageQuantizer
+# Quantize tensor based on min/max of tensor values with the fixed range.
+FixedQuantizer = tfmot.quantization.keras.quantizers.FixedQuantizer
+# Quantize tensor based on min/max of tensor values across all batches.
+AllValuesQuantizer = tfmot.quantization.keras.quantizers.AllValuesQuantizer
 
 
 class DenseQuantizeConfig(tfmot.quantization.keras.QuantizeConfig):
@@ -25,7 +34,11 @@ class DenseQuantizeConfig(tfmot.quantization.keras.QuantizeConfig):
         List of 2-tuples. Each tuple is a weight tensor and an associated
         quantizer.
         """
-        return [(layer.kernel, LastValueQuantizer(num_bits=8, symmetric=True, narrow_range=False, per_axis=False))]
+
+        return [(layer.kernel, FixedPointQuantizer(num_bits=8, init_min=-6.0, init_max=6.0, narrow_range=False))]
+        # return [(layer.kernel, FixedQuantizer(num_bits=8, init_min=-6.0, init_max=6.0, narrow_range=False))]
+        # return [(layer.kernel, AllValuesQuantizer(num_bits=8, per_axis=False, symmetric=True,narrow_range=False))]
+        # return [(layer.kernel, LastValueQuantizer(num_bits=8, symmetric=True, narrow_range=False, per_axis=False))]
 
     # Configure how to quantize activations.
     def get_activations_and_quantizers(self, layer):
