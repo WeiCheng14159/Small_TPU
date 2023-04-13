@@ -5,11 +5,11 @@ from utils.quant_utils import quant_Dense_layer
 
 
 def mynet(input_shape, num_classes,
-           conv_config=[(1, (5, 5), (1, 1), 'same', 'relu'),
-                        (1, (5, 5), (1, 1), 'same', 'relu')],
-           fc_config=[(10, 'relu'),
-                      (10, 'relu'),
-                      (10, 'softmax')]):
+          conv_config=[(1, (5, 5), (1, 1), 'same', 'relu'),
+                       (1, (5, 5), (1, 1), 'same', 'relu')],
+          fc_config=[(1, 'relu'),
+                     (1, 'relu'),
+                     (10, 'softmax')]):
 
     model = tf.keras.models.Sequential()
 
@@ -39,31 +39,3 @@ def mynet(input_shape, num_classes,
                   metrics=['accuracy'])
 
     return model
-
-
-# Quantization shortcut
-quantize_annotate_layer = tfmot.quantization.keras.quantize_annotate_layer
-quantize_annotate_model = tfmot.quantization.keras.quantize_annotate_model
-quantize_apply = tfmot.quantization.keras.quantize_apply
-quantize_scope = tfmot.quantization.keras.quantize_scope
-
-
-def mynet_qnn(input_shape, num_classes):
-
-    model = mynet(input_shape=input_shape, num_classes=num_classes)
-
-    # Use `tf.keras.models.clone_model` to apply `quant_Dense_layer`
-    # to the layers of the model.
-    annotated_model = tf.keras.models.clone_model(
-        model, clone_function=quant_Dense_layer)
-
-    # `quantize_apply` requires mentioning `DenseQuantizeConfig` with `quantize_scope`
-    with quantize_scope({'DenseQuantizeConfig': DenseQuantizeConfig}):
-        q_model = quantize_apply(annotated_model)
-
-    # `quantize_apply` requires a recompile.
-    q_model.compile(loss='categorical_crossentropy',
-                    optimizer='adam',
-                    metrics=['accuracy'])
-
-    return q_model

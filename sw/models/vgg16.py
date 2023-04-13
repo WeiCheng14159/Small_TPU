@@ -53,24 +53,3 @@ def vgg16(input_shape, num_classes,
                   metrics=['accuracy'])
 
     return model
-
-
-def vgg16_qnn(input_shape, num_classes):
-
-    model = vgg16(input_shape=input_shape, num_classes=num_classes)
-
-    # Use `tf.keras.models.clone_model` to apply `quant_Dense_layer`
-    # to the layers of the model.
-    annotated_model = tf.keras.models.clone_model(
-        model, clone_function=quant_Dense_layer)
-
-    # `quantize_apply` requires mentioning `DenseQuantizeConfig` with `quantize_scope`
-    with quantize_scope({'DenseQuantizeConfig': DenseQuantizeConfig}):
-        q_model = quantize_apply(annotated_model)
-
-    # `quantize_apply` requires a recompile.
-    q_model.compile(loss='categorical_crossentropy',
-                    optimizer='adam',
-                    metrics=['accuracy'])
-
-    return q_model
