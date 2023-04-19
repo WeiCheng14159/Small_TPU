@@ -1,3 +1,7 @@
+# Data files
+*.txt
+*.hex
+
 *.log
 *.key
 *.conf
