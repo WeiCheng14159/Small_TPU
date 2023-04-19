@@ -12,6 +12,7 @@ from models.lenet5 import lenet5
 
 # Utilities
 from visualize.visualize_dist import plot_distribution
+from utils.save_to_file import save_weights, save_inputs, save_outputs
 
 if len(sys.argv) < 2:
     print("Usage: python get_wrights.py <loaded_model_name>")
