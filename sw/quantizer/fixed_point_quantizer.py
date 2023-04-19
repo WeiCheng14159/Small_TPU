@@ -43,7 +43,7 @@ class FixedPointQuantizer(Quantizer):
             self.init_max,
             narrow_range=self.narrow_range,
         )
-        # tf.print(inputs)  
+        # tf.print(inputs)
         # tf.print(quant)
         return quant
 
