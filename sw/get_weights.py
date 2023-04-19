@@ -33,27 +33,47 @@ model.summary()
 # Specify the names of the layers whose weights you want to print
 specific_layers = ['quant_fc1', 'quant_fc2', 'quant_fc3']
 
-# Get the trained weight tensors for all fully connected layers
-weight_tensors = []
-
-# Iterate through the layers and print the weights
-for layer in model.layers:
-    if layer.name in specific_layers:
-        # Get the weight tensor
-        weight_tensor = layer.get_weights()[0]
-        weight_tensors.append(weight_tensor)
-
 # Create a random input tensor for testing
 input_x = np.random.rand(1, 28, 28, 1)
 
-# Evaluate the model and get the output tensors
-outputs = model.predict(input_x)
+# Save inputs (of format: NHWC) as text file
+save_inputs(input_x, "input.txt")
 
-# Store input tensor
+# Get the trained weight tensors
+weight_tensors = []
 
+# Iterate through layers of interests and store weight tensors
+for layer in model.layers:
+    if layer.name in specific_layers:
+        weight_tensor = layer.get_weights()[0]
+        weight_tensors.append(weight_tensor)
+
+# Get the output tensors of each layer
+output_tensors = []
+
+# Iterate through the layers of interests and build an intermediate models. Then, store the output of that layer
+for layer_name in specific_layers:
+    temp_model = tf.keras.Model(inputs=model.input,
+                                outputs=model.get_layer(layer_name).output)
+    output_tensors.append(temp_model.predict(input_x))
 
 # Print the iweight, and output tensors for all fully connected layers
-for i, weight_tensor in enumerate(weight_tensors):
-    print(f"Layer {i} weights shape: {weight_tensor.shape}")
-    plot_distribution(weight_tensor, str(specific_layers[i]+".png"))
-    print(weight_tensor)
+for i, _ in enumerate(weight_tensors):
+    # Get input, weight, output of each tensors
+    tensor_w = weight_tensors[i]
+    tensor_out = output_tensors[i]
+    layer_name = specific_layers[i]
+
+    # w
+    print(f"Layer {i} weights shape: {tensor_w.shape}")
+    # Save weights as text file
+    save_weights(tensor_w, layer_name+"_w.txt")
+    # Plot weight distributions and save as an image
+    # plot_distribution(tensor_w, str(layer_name+"_w.png"))
+
+    # output
+    print(f"Layer {i} output shape: {tensor_out.shape}")
+    # Save outputs as text file
+    save_weights(tensor_out, layer_name+"_out.txt")
+    # Plot weight distributions and save as an image
+    # plot_distribution(tensor_out, str(layer_name+"_out.png"))
