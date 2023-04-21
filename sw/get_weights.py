@@ -48,6 +48,15 @@ for layer in model.layers:
         weight_tensor = layer.get_weights()[0]
         weight_tensors.append(weight_tensor)
 
+# Get the trained bias tensors
+bias_tensors = []
+
+# Iterate through layers of interests and store bias tensors
+for layer in model.layers:
+    if layer.name in specific_layers:
+        bias_tensor = layer.get_weights()[1]
+        bias_tensors.append(bias_tensor)
+
 # Get the output tensors of each layer
 output_tensors = []
 
