@@ -101,7 +101,7 @@ for i, _ in enumerate(bias_tensors):
     layer_name = specific_layers[i]
 
     # output
-    print(f"Layer {i} output shape: {tensor_bias.shape}")
+    print(f"Layer {i} bias shape: {tensor_bias.shape}")
     # Save outputs as text file
     save_weights(tensor_bias, layer_name+"_bias.txt")
     # Plot weight distributions and save as an image
