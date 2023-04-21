@@ -3,31 +3,33 @@ import sys
 import numpy as np
 
 # Models
-from models.mynet_qnn import mynet_qnn_v1
-from models.mynet import mynet
-from models.vgg16_qnn import vgg16_qnn_v1
-from models.vgg16 import vgg16
-from models.lenet5_qnn import lenet5_qnn_v1
-from models.lenet5 import lenet5
+from models.model_zoo import model_zoo
 
 # Utilities
 from visualize.visualize_dist import plot_distribution
 from utils.save_to_file import save_weights, save_inputs, save_outputs
 
 if len(sys.argv) < 2:
-    print("Usage: python get_wrights.py <loaded_model_name>")
+    print("Usage: python get_wrights.py <loaded_model_name.h5>")
     sys.exit(1)
 
 # Get the model name from command line argument
-model_name = sys.argv[1]
+model_filename = str(sys.argv[1])
+model_name = model_filename.replace(".h5", "")
 
 # Define the input shape of the network
 input_shape = (28, 28, 1)
 # Define the number of classes
 num_classes = 10
 
-model = mynet_qnn_v1(input_shape=input_shape, num_classes=num_classes)
-model.load_weights(model_name)
+if model_name not in model_zoo():
+    print(
+        f"Model '{model_name}' not found. Please choose from {list(model_zoo().keys())}.")
+    sys.exit(1)
+
+model = model_zoo()[model_name](
+    input_shape=input_shape, num_classes=num_classes)
+model.load_weights(model_filename)
 model.summary()
 
 # Specify the names of the layers whose weights you want to print

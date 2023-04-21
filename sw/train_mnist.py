@@ -1,12 +1,8 @@
-from models.mynet_qnn import mynet_qnn_v1
-from models.mynet import mynet
-from models.vgg16_qnn import vgg16_qnn_v1
-from models.vgg16 import vgg16
-from models.lenet5_qnn import lenet5_qnn_v1
-from models.lenet5 import lenet5
 from tensorflow.keras import datasets, layers, models
 import tensorflow as tf
 import os
+# Models
+from models.model_zoo import model_zoo
 
 # Set the GPU index you want to use (0-based)
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
@@ -16,7 +12,13 @@ input_shape = (28, 28, 1)
 # Define the number of classes
 num_classes = 10
 
-model = mynet_qnn_v1(input_shape=input_shape, num_classes=num_classes)
+model_name = "mynet_qnn_v1"
+if model_name not in model_zoo():
+    print(
+        f"Model '{model_name}' not found. Please choose from {list(model_zoo().keys())}.")
+    sys.exit(1)
+model = model_zoo()[model_name](
+    input_shape=input_shape, num_classes=num_classes)
 
 # Load the MNIST dataset and preprocess the data
 (x_train, y_train), (x_test, y_test) = datasets.mnist.load_data()
@@ -38,4 +40,4 @@ model.fit(x_train, y_train, batch_size=128, epochs=30,
           validation_data=(x_test, y_test),
           callbacks=[tb_callback])
 
-model.save_weights('qnn.h5')
+model.save_weights(model_name+".h5")
