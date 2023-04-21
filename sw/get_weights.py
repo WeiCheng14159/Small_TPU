@@ -66,11 +66,10 @@ for layer_name in specific_layers:
                                 outputs=model.get_layer(layer_name).output)
     output_tensors.append(temp_model.predict(input_x))
 
-# Print the iweight, and output tensors for all fully connected layers
+# Print the weight tensors for targeted layers
 for i, _ in enumerate(weight_tensors):
-    # Get input, weight, output of each tensors
+    # Get weight tensors
     tensor_w = weight_tensors[i]
-    tensor_out = output_tensors[i]
     layer_name = specific_layers[i]
 
     # w
@@ -80,9 +79,28 @@ for i, _ in enumerate(weight_tensors):
     # Plot weight distributions and save as an image
     # plot_distribution(tensor_w, str(layer_name+"_w.png"))
 
+# Print the output tensors for targeted layers
+for i, _ in enumerate(output_tensors):
+    # Get output tensors
+    tensor_out = output_tensors[i]
+    layer_name = specific_layers[i]
+
     # output
     print(f"Layer {i} output shape: {tensor_out.shape}")
     # Save outputs as text file
     save_weights(tensor_out, layer_name+"_out.txt")
     # Plot weight distributions and save as an image
     # plot_distribution(tensor_out, str(layer_name+"_out.png"))
+
+# Print the bias tensors for targeted layers
+for i, _ in enumerate(bias_tensors):
+    # Get bias tensors
+    tensor_bias = bias_tensors[i]
+    layer_name = specific_layers[i]
+
+    # output
+    print(f"Layer {i} output shape: {tensor_bias.shape}")
+    # Save outputs as text file
+    save_weights(tensor_bias, layer_name+"_bias.txt")
+    # Plot weight distributions and save as an image
+    # plot_distribution(tensor_out, str(layer_name+"_bias.png"))
