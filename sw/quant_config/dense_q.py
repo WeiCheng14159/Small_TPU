@@ -35,8 +35,8 @@ class DenseQuantizeConfig(tfmot.quantization.keras.QuantizeConfig):
         quantizer.
         """
 
-        return [(layer.kernel, FixedPointQuantizer(num_bits=8, init_min=-6.0, init_max=6.0, narrow_range=False))]
-        # return [(layer.kernel, FixedQuantizer(num_bits=8, init_min=-6.0, init_max=6.0, narrow_range=False))]
+        return [(layer.kernel, FixedQuantizer(num_bits=8, init_min=-6.0, init_max=6.0, narrow_range=True))]
+        # return [(layer.kernel, FixedPointQuantizer(num_bits=8, init_min=-6.0, init_max=6.0, narrow_range=False))]
         # return [(layer.kernel, AllValuesQuantizer(num_bits=8, per_axis=False, symmetric=True,narrow_range=False))]
         # return [(layer.kernel, LastValueQuantizer(num_bits=8, symmetric=True, narrow_range=False, per_axis=False))]
 
@@ -58,7 +58,8 @@ class DenseQuantizeConfig(tfmot.quantization.keras.QuantizeConfig):
         List of 2-tuples. Each tuple is a keras activation and an associated
         quantizer.
         """
-        return [(layer.activation, MovingAverageQuantizer(num_bits=8, symmetric=False, narrow_range=False, per_axis=False))]
+
+        return [(layer.activation, MovingAverageQuantizer(num_bits=8, symmetric=True, narrow_range=True, per_axis=False))]
 
     def set_quantize_weights(self, layer, quantize_weights):
         """Replace the weights in the layer with quantized weights.

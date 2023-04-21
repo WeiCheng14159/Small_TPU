@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def float_to_fixed(array, min_val=-1.0, max_val=1.0, num_bits=8):
+def float_to_fixed(array, min_val=-6.0, max_val=6.0, num_bits=8):
     # Calculate the range of values that can be represented in the fixed point format
     range_val = max_val - min_val
 
@@ -23,8 +23,8 @@ def float_to_fixed(array, min_val=-1.0, max_val=1.0, num_bits=8):
 float_array = np.array([0.1, 0.5, 1.2, -0.3, 3.0, 2.5])
 
 # Define the minimum and maximum values and the number of bits in the fixed point format
-min_val = -1.0
-max_val = 1.0
+min_val = -6.0
+max_val = 6.0
 num_bits = 8
 
 # Convert the floating point array to fixed point using the function
