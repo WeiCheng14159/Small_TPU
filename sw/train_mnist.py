@@ -12,7 +12,7 @@ input_shape = (28, 28, 1)
 # Define the number of classes
 num_classes = 10
 
-model_name = "mynet_qnn_v1"
+model_name = "mlp_qnn_v1"
 if model_name not in model_zoo():
     print(
         f"Model '{model_name}' not found. Please choose from {list(model_zoo().keys())}.")
