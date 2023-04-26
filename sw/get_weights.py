@@ -1,6 +1,7 @@
 import tensorflow as tf
 import sys
 import numpy as np
+from tensorflow.keras import datasets
 
 # Models
 from models.model_zoo import model_zoo
@@ -36,7 +37,11 @@ model.summary()
 specific_layers = ['quant_fc1', 'quant_fc2', 'quant_fc3']
 
 # Create a random input tensor for testing
-input_x = np.random.rand(1, 28, 28, 1)
+# input_x = np.random.rand(1, 28, 28, 1)
+
+# Use mnist dataset for testing
+(x_train, y_train), (x_test, y_test) = datasets.mnist.load_data()
+input_x = x_train[0].reshape(-1, 28, 28, 1)
 
 # Save inputs (of format: NHWC) as text file
 save_inputs(input_x, "input.txt")
