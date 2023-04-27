@@ -2,7 +2,7 @@ import numpy as np
 
 
 class QuantizationScheme:
-    def __init__(self, total_bits=8, int_bits=3):
+    def __init__(self, total_bits=16, int_bits=8):
         self.total_bits = total_bits
         self.int_bits = int_bits
         self.frac_bits = (total_bits - int_bits)
@@ -23,7 +23,7 @@ class QuantizationScheme:
 
 
 # Define the minimum and maximum values and the number of bits in the fixed point format
-num_bits, num_int = 8, 3
+num_bits, num_int = 16, 8
 
 q_sch = QuantizationScheme(num_bits, num_int)
 

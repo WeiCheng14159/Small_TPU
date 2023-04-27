@@ -35,7 +35,7 @@ class DenseQuantizeConfig(tfmot.quantization.keras.QuantizeConfig):
         quantizer.
         """
 
-        return [(layer.kernel, FixedQuantizer(num_bits=8, init_min=-6.0, init_max=6.0, narrow_range=True))]
+        return [(layer.kernel, FixedQuantizer(num_bits=16, init_min=-6.0, init_max=6.0, narrow_range=True))]
         # return [(layer.kernel, FixedPointQuantizer(num_bits=8, init_min=-6.0, init_max=6.0, narrow_range=False))]
         # return [(layer.kernel, AllValuesQuantizer(num_bits=8, per_axis=False, symmetric=True,narrow_range=False))]
         # return [(layer.kernel, LastValueQuantizer(num_bits=8, symmetric=True, narrow_range=False, per_axis=False))]

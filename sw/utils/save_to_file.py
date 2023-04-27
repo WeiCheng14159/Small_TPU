@@ -4,20 +4,32 @@ from .quantization_scheme import QuantizationScheme
 
 def save_weights(w, filename, q_scheme):
     data = w.flatten()
-    write_float32(data, q_scheme, filename)
+    write_quant_int(data, q_scheme, filename)
 
 
 def save_inputs(inp, filename, q_scheme):
     data = inp.flatten()
-    write_float32(data, q_scheme, filename)
+    write_quant_int(data, q_scheme, filename)
 
 
 def save_outputs(outp, filename, q_scheme):
     data = outp.flatten()
-    write_float32(data, q_scheme, filename)
+    write_quant_int(data, q_scheme, filename)
 
 
 def write_float32(data, q_scheme, filename):
+    if not isinstance(data, np.ndarray):
+        raise ("This is not an numpy ndarray")
+    if len(data.shape) != 1:
+        raise ("numpy ndarray is not flattened")
+    with open(filename, 'w') as f:
+        num_of_hex = 4
+        for i in range(data.shape[0]):
+            f.write("float32 {:.8f}\n".format(data[i]))
+    f.close()
+
+
+def write_quant_int(data, q_scheme, filename):
     if not isinstance(data, np.ndarray):
         raise ("This is not an numpy ndarray")
     if len(data.shape) != 1:
@@ -29,7 +41,7 @@ def write_float32(data, q_scheme, filename):
     q_data = q_data.astype(int)
 
     with open(filename, 'w') as f:
-        num_of_hex = 8
+        num_of_hex = 4
         for i in range(q_data.shape[0]):
             data = q_data[i]
             # f.write("float32 {:.8f}\n".format(data))

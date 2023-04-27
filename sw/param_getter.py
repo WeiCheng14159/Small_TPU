@@ -86,7 +86,7 @@ if __name__ == "__main__":
     input_x = x_train[0].reshape(-1, 28, 28, 1)
 
     # Quantization scheme
-    q_scheme = QuantizationScheme(8, 3)
+    q_scheme = QuantizationScheme(16, 8)
 
     # Save inputs (of format: NHWC) as text file
     save_inputs(input_x, "input.txt", q_scheme)
