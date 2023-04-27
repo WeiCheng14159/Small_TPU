@@ -24,7 +24,7 @@ class ParamGetter:
             if layer.name == layer_name:
                 tensor_w = layer.get_weights()[0]
                 print(f"Layer {layer_name} weights shape: {tensor_w.shape}")
-                save_weights(tensor_w, layer_name+"_w.txt", self.q_scheme)
+                save_weights(tensor_w, layer_name+"_w.hex", self.q_scheme)
                 # Plot weight distributions and save as an image
                 # plot_distribution(tensor_w, str(layer_name+"_w.png"))
 
@@ -34,7 +34,7 @@ class ParamGetter:
             if layer.name == layer_name:
                 tensor_b = layer.get_weights()[1]
                 print(f"Layer {layer_name} bias shape: {tensor_b.shape}")
-                save_weights(tensor_b, layer_name+"_bias.txt", self.q_scheme)
+                save_weights(tensor_b, layer_name+"_bias.hex", self.q_scheme)
                 # Plot weight distributions and save as an image
                 # plot_distribution(tensor_b, str(layer_name+"_bias.png"))
 
@@ -45,7 +45,7 @@ class ParamGetter:
         tensor_out = temp_model.predict(tensor_in)
         print(f"Layer {layer_name} output shape: {tensor_out.shape}")
         # Save outputs as text file
-        save_weights(tensor_out, layer_name+"_out.txt", self.q_scheme)
+        save_weights(tensor_out, layer_name+"_out.hex", self.q_scheme)
         # Plot weight distributions and save as an image
         # plot_distribution(tensor_out, str(layer_name+"_out.png"))
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     q_scheme = QuantizationScheme(16, 8)
 
     # Save inputs (of format: NHWC) as text file
-    save_inputs(input_x, "input.txt", q_scheme)
+    save_inputs(input_x, "quant_input.hex", q_scheme)
 
     getter = ParamGetter(model, q_scheme)
 
