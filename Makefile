@@ -5,7 +5,8 @@ SRC_DIR            =$(ROOT_DIR)/src
 SIM_DIR            =$(ROOT_DIR)/sim
 SYN_DIR            =$(ROOT_DIR)/syn
 APR_DIR            =$(ROOT_DIR)/pr
-INC_DIR            =$(ROOT_DIR)/include
+INC_DIR            =$(SRC_DIR)/include
+HEX_DIR            =$(ROOT_DIR)/data
 SCRIPT_DIR         =$(ROOT_DIR)/script
 REPORT_DIR         =$(ROOT_DIR)/report
 NC_DIR             =$(ROOT_DIR)/conf
@@ -74,6 +75,10 @@ cp_tb_src: gen_hex
 	cd $(BUILD_DIR); \
 	cp $(TB_SRC) .;
 
+gen_def: 
+	cd $(INC_DIR); \
+	bash gen_def.sh > define.v;
+
 cp_CHIP_v:
 	cp $(SRC_DIR)/CHIP.v $(BUILD_DIR);
 
@@ -90,14 +95,86 @@ format:
 	find $(SRC_DIR) -name "*.sv" -or -name "*.v" -or -name "*.svh" | xargs verible-verilog-format --inplace
 
 # Run RTL simulation
-rtl0: $(BUILD)
+rtl0: $(BUILD) gen_def 
 	cd $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
 	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
 	+nc64bit \
 	+access+r \
 	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
-	+prog_path=../data/conv0 \
+	+prog_path=$(HEX_DIR)/quant_fc1 \
+
+rtl1: $(BUILD) gen_def
+	cd $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+prog_path=$(HEX_DIR)/quant_fc2 \
+
+rtl2: $(BUILD) gen_def
+	cd $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+prog_path=$(HEX_DIR)/quant_fc3 \
+
+rtl3: $(BUILD) gen_def
+	cd $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+prog_path=$(HEX_DIR)/conv3 \
+
+rtl4: $(BUILD) gen_def
+	cd $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+prog_path=$(HEX_DIR)/conv4 \
+
+rtl5: $(BUILD) gen_def
+	cd $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+prog_path=$(HEX_DIR)/conv5 \
+
+rtl6: $(BUILD) gen_def
+	cd $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+prog_path=$(HEX_DIR)/conv6 \
+
+rtl7: $(BUILD) gen_def
+	cd $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+prog_path=$(HEX_DIR)/conv7 \
+
+rtl8: $(BUILD) gen_def
+	cd $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+prog_path=$(HEX_DIR)/conv8 \
 
 # View waveform using nWave
 nw: $(BUILD)
@@ -105,29 +182,143 @@ nw: $(BUILD)
 	nWave -f $(TOP).fsdb -sswr $(NC_DIR)/signal.rc +access+r +nc64bit &
 
 # Run synthesize with Design Compiler
-synthesize: $(BUILD) syn_init
+synthesize: $(BUILD) syn_init gen_def
 	rm -rf $(SYN_DIR)/*; \
 	cd $(BUILD_DIR); \
 	cp $(SCRIPT_DIR)/${PROC}/synopsys_dc.setup.$(PROC) $(BUILD_DIR)/.synopsys_dc.setup; \
 	dcnxt_shell -f $(SCRIPT_DIR)/dc_syn.tcl -x "set proc ${PROC}";
 
-# Run gate-level simulation (nWave)
-syn: $(BUILD) cp_tb_src syn_init
+# Run gate-level simulation
+syn0: $(BUILD) cp_tb_src syn_init gen_def
 	cd $(BUILD_DIR); \
 	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
 	-v $(CBDK_DIR)/$(CORE_CELL) \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(SYN_DIR)+$(INC_DIR) \
+	+define+SYN \
 	+nc64bit \
 	+access+r \
-	+define+SHM_FILE=\"$(TOP).shm\" \
-	+define+FSDB_FILE=\"$(TOP).fsdb\" \
-	+define+SDF \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+ncmaxdelays \
+	+prog_path=$(HEX_DIR)/conv0 \
+	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
+
+syn1: $(BUILD) syn_init syn_init gen_def
+	cd $(BUILD_DIR); \
+	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
+	-v $(CBDK_DIR)/$(CORE_CELL) \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(SYN_DIR)+$(INC_DIR) \
+	+define+SYN \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+ncmaxdelays \
+	+prog_path=$(HEX_DIR)/conv1 \
+	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
+
+syn2: $(BUILD) syn_init syn_init gen_def
+	cd $(BUILD_DIR); \
+	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
+	-v $(CBDK_DIR)/$(CORE_CELL) \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(SYN_DIR)+$(INC_DIR) \
+	+define+SYN \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+ncmaxdelays \
+	+prog_path=$(HEX_DIR)/conv2 \
+	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
+
+syn3: $(BUILD) syn_init syn_init gen_def
+	cd $(BUILD_DIR); \
+	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
+	-v $(CBDK_DIR)/$(CORE_CELL) \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(SYN_DIR)+$(INC_DIR) \
+	+define+SYN \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+ncmaxdelays \
+	+prog_path=$(HEX_DIR)/conv3 \
+	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
+
+syn4: $(BUILD) syn_init syn_init gen_def
+	cd $(BUILD_DIR); \
+	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
+	-v $(CBDK_DIR)/$(CORE_CELL) \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(SYN_DIR)+$(INC_DIR) \
+	+define+SYN \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+ncmaxdelays \
+	+prog_path=$(HEX_DIR)/conv4 \
+	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
+
+syn5: $(BUILD) syn_init syn_init gen_def
+	cd $(BUILD_DIR); \
+	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
+	-v $(CBDK_DIR)/$(CORE_CELL) \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(SYN_DIR)+$(INC_DIR) \
+	+define+SYN \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+ncmaxdelays \
+	+prog_path=$(HEX_DIR)/conv5 \
+	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
+
+syn6: $(BUILD) syn_init syn_init gen_def
+	cd $(BUILD_DIR); \
+	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
+	-v $(CBDK_DIR)/$(CORE_CELL) \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(SYN_DIR)+$(INC_DIR) \
+	+define+SYN \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+ncmaxdelays \
+	+prog_path=$(HEX_DIR)/conv6 \
+	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
+
+syn7: $(BUILD) syn_init syn_init gen_def
+	cd $(BUILD_DIR); \
+	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
+	-v $(CBDK_DIR)/$(CORE_CELL) \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(SYN_DIR)+$(INC_DIR) \
+	+define+SYN \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+ncmaxdelays \
+	+prog_path=$(HEX_DIR)/conv7 \
+	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
+
+syn8: $(BUILD) syn_init syn_init gen_def
+	cd $(BUILD_DIR); \
+	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
+	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
+	-v $(CBDK_DIR)/$(CORE_CELL) \
+	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(SYN_DIR)+$(INC_DIR) \
+	+define+SYN \
+	+nc64bit \
+	+access+r \
+	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
+	+ncmaxdelays \
+	+prog_path=$(HEX_DIR)/conv8 \
 	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
 
 ### chip-level ###
 
 # Run CHIP-level synthesize with Design Compiler
-synthesize_chip: $(BUILD) syn_init cp_CHIP_v
+synthesize_chip: $(BUILD) syn_init gen_def cp_CHIP_v
 	rm -rf $(SYN_DIR)/*; \
 	cd $(BUILD_DIR); \
 	cp $(SCRIPT_DIR)/${PROC}/synopsys_dc.setup.$(PROC) $(BUILD_DIR)/.synopsys_dc.setup; \

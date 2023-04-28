@@ -1,11 +1,11 @@
-`include "SRAM_16b_32768w_64k.sv"
-`include "sp_ram_intf.sv"
+`include "sram_buffer/SRAM_16b_32768w_64k.sv"
+`include "include/single_port_ram_intf.sv"
 
 // Combine six 64kB SRAM into 384kB SRAM
 
-module InOut_SRAM_384k (
-    input logic              clk,
-          sp_ram_intf.memory mem
+module Weight_SRAM_384k (
+    input logic                    clk,
+          SinglePortRamIntf.memory mem
 );
 
   logic        CK;

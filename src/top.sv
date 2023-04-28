@@ -1,8 +1,9 @@
-`include "sp_ram_intf.sv"
-`include "InOut_SRAM_384k.sv"  // Input SRAM or Output SRAM (384 KB)
-`include "Weight_SRAM_180k.sv"  // Weight SRAM (180 KB)
-`include "Param_SRAM_16B.sv"  // Param SRAM (16B)
-`include "ConvAcc.sv"
+`include "include/single_port_ram_intf.sv"
+`include "sram_buffer/InOut_SRAM_384k.sv"  // Input SRAM or Output SRAM (384 KB)
+`include "sram_buffer/Weight_SRAM_384k.sv"  // Weight SRAM (384 KB)
+`include "sram_buffer/Bias_SRAM_384k.sv"  // Bias SRAM (384 KB)
+`include "sram_buffer/Param_SRAM_16B.sv"  // Param SRAM (16B)
+`include "tensor_accelerator.sv"
 
 module top (
     input  logic       clk,
@@ -13,11 +14,11 @@ module top (
 );
 
   // Interface
-  sp_ram_intf param_intf ();
-  sp_ram_intf input_intf ();
-  sp_ram_intf base_kernel_intf ();
-  sp_ram_intf filter_kernel_intf ();
-  sp_ram_intf output_intf ();
+  SinglePortRamIntf param_intf ();
+  SinglePortRamIntf input_intf ();
+  SinglePortRamIntf bias_intf ();
+  SinglePortRamIntf weight_intf ();
+  SinglePortRamIntf output_intf ();
 
   Param_SRAM_16B i_param_mem (
       .clk(clk),
@@ -34,26 +35,27 @@ module top (
       .mem(output_intf)
   );
 
-  Weight_SRAM_180k i_Base_kernel_SRAM_180k (
+  Weight_SRAM_384k i_Weight_SRAM_384k (
       .clk(clk),
-      .mem(base_kernel_intf)
+      .mem(weight_intf)
   );
 
-  Weight_SRAM_180k i_Filter_kernel_SRAM_180k (
+  Bias_SRAM_384k i_Bias_SRAM_384k (
       .clk(clk),
-      .mem(filter_kernel_intf)
+      .mem(bias_intf)
   );
 
-  ConvAcc i_ConvAcc (
+  TensorAccelerator i_TensorAccelerator (
       .rstn(rstn),
       .clk(clk),
       .start(start_i),
-      .finish(finish_o),
       .mode(mode_i),
-      .param_intf(param_intf),
-      .base_kernel_intf(base_kernel_intf),
-      .filter_kernel_intf(filter_kernel_intf),
-      .input_intf(input_intf),
+      .finish(finish_o),
+
+      .param_intf (param_intf),
+      .weight_intf(weight_intf),
+      .bias_intf  (bias_intf),
+      .input_intf (input_intf),
       .output_intf(output_intf)
   );
 

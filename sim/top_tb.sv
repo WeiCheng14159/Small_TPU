@@ -20,9 +20,10 @@
 `include "Weight_SRAM/SUMA180_16384X18X1BM4_rtl.sv"
 `endif
 
-`include "ConvAcc.svh"
+`include "accelerator_mode.svh"
 `define INOUT_BLOCK_WORD_SIZE 32768
-`define WEIGHT_BLOCK_WORD_SIZE 16384
+`define WEIGHT_BLOCK_WORD_SIZE 32768
+`define BIAS_BLOCK_WORD_SIZE 1000
 
 module top_tb;
 
@@ -59,25 +60,27 @@ module top_tb;
     #(`CYCLE) rstn = 1;
     ret = $value$plusargs("prog_path=%s", prog_path);
 
-    layer = prog_path.substr(prog_path.len() - 5, prog_path.len() - 2);
+    layer = prog_path.substr(prog_path.len() - 3, prog_path.len() - 1);
     layer_num = prog_path[prog_path.len()-1];
 
-    if (layer == "conv") begin
-      epu_mode = 1 << `CONV_3x3_MODE;
+    if (layer == "fc") begin
+      epu_mode = 1 << `FC_MODE;
+    end else if (layer == "conv") begin
+      epu_mode = 1 << `CONV_MODE;
     end else begin
       epu_mode = 1 << `IDLE_MODE;
     end
 
-    // Parameter
-    $readmemh({prog_path, "/param.hex"}, param);
-    for (i = 0; i < 4; i = i + 1) begin
-      TOP.i_param_mem.Memory[i] = param[i];
-    end
+    // TODO: Read in parameter
+    // $readmemh({prog_path, "/param.hex"}, param);
+    // for (i = 0; i < 4; i = i + 1) begin
+    //   TOP.i_param_mem.Memory[i] = param[i];
+    // end
 
-    // Input data
+    // Read in input
     num = 0;
     slice = 0;
-    gf = $fopen({prog_path, "/Input8.hex"}, "r");
+    gf = $fopen({prog_path, "/input.hex"}, "r");
     while (!$feof(
         gf
     )) begin
@@ -127,105 +130,103 @@ module top_tb;
     end
     $fclose(gf);
 
-    // Weights
-    if (epu_mode == (1 << `CONV_3x3_MODE)) begin
-      // Base kernel
-      num = 0;
-      slice = 0;
-      gf = $fopen({prog_path, "/BaseKernel9.hex"}, "r");
-      while (!$feof(
-          gf
-      )) begin
-        if (num < `WEIGHT_BLOCK_WORD_SIZE) begin
-          if (slice == 0)
-            ret = $fscanf(
-                gf,
-                "%h\n",
-                TOP.i_Base_kernel_SRAM_180k.SRAM_blk[0].i_SRAM_18b_16384w_36k.i_SUMA180_16384X18X1BM4.Memory[num]
-            );
-          else if (slice == 1)
-            ret = $fscanf(
-                gf,
-                "%h\n",
-                TOP.i_Base_kernel_SRAM_180k.SRAM_blk[1].i_SRAM_18b_16384w_36k.i_SUMA180_16384X18X1BM4.Memory[num]
-            );
-          else if (slice == 2)
-            ret = $fscanf(
-                gf,
-                "%h\n",
-                TOP.i_Base_kernel_SRAM_180k.SRAM_blk[2].i_SRAM_18b_16384w_36k.i_SUMA180_16384X18X1BM4.Memory[num]
-            );
-          else if (slice == 3)
-            ret = $fscanf(
-                gf,
-                "%h\n",
-                TOP.i_Base_kernel_SRAM_180k.SRAM_blk[3].i_SRAM_18b_16384w_36k.i_SUMA180_16384X18X1BM4.Memory[num]
-            );
-          else if (slice == 4)
-            ret = $fscanf(
-                gf,
-                "%h\n",
-                TOP.i_Base_kernel_SRAM_180k.SRAM_blk[4].i_SRAM_18b_16384w_36k.i_SUMA180_16384X18X1BM4.Memory[num]
-            );
-          num = num + 1;
-        end else begin  // num == 32768
-          slice = slice + 1;
-          num   = 0;
-        end
-      end
-      $fclose(gf);
-
-      // Filter kernel
-      num = 0;
-      slice = 0;
-      gf = $fopen({prog_path, "/FilterKernel9.hex"}, "r");
-      while (!$feof(
-          gf
-      )) begin
-        if (num < `WEIGHT_BLOCK_WORD_SIZE) begin
-          if (slice == 0)
-            ret = $fscanf(
-                gf,
-                "%h\n",
-                TOP.i_Filter_kernel_SRAM_180k.SRAM_blk[0].i_SRAM_18b_16384w_36k.i_SUMA180_16384X18X1BM4.Memory[num]
-            );
-          else if (slice == 1)
-            ret = $fscanf(
-                gf,
-                "%h\n",
-                TOP.i_Filter_kernel_SRAM_180k.SRAM_blk[1].i_SRAM_18b_16384w_36k.i_SUMA180_16384X18X1BM4.Memory[num]
-            );
-          else if (slice == 2)
-            ret = $fscanf(
-                gf,
-                "%h\n",
-                TOP.i_Filter_kernel_SRAM_180k.SRAM_blk[2].i_SRAM_18b_16384w_36k.i_SUMA180_16384X18X1BM4.Memory[num]
-            );
-          else if (slice == 3)
-            ret = $fscanf(
-                gf,
-                "%h\n",
-                TOP.i_Filter_kernel_SRAM_180k.SRAM_blk[3].i_SRAM_18b_16384w_36k.i_SUMA180_16384X18X1BM4.Memory[num]
-            );
-          else if (slice == 4)
-            ret = $fscanf(
-                gf,
-                "%h\n",
-                TOP.i_Filter_kernel_SRAM_180k.SRAM_blk[4].i_SRAM_18b_16384w_36k.i_SUMA180_16384X18X1BM4.Memory[num]
-            );
-
-          num = num + 1;
-        end else begin  // num == 32768
-          slice = slice + 1;
-          num   = 0;
-        end
-      end
-      $fclose(gf);
-    end
-
-    // Output (8 bit)
+    // Read in bias 
     num = 0;
-    gf  = $fopen({prog_path, "/Output8.hex"}, "r");
+    slice = 0;
+    gf = $fopen({prog_path, "/bias.hex"}, "r");
+    while (!$feof(
+        gf
+    )) begin
+      if (num < `BIAS_BLOCK_WORD_SIZE) begin
+        if (slice == 0)
+          ret = $fscanf(
+              gf,
+              "%h\n",
+              TOP.i_Weight_SRAM_384k.SRAM_blk[0].i_SRAM_16b_32768w_64k.i_SUMA180_32768X16X1BM8.Memory[num]
+          );
+        else if (slice == 1)
+          ret = $fscanf(
+              gf,
+              "%h\n",
+              TOP.i_Weight_SRAM_384k.SRAM_blk[1].i_SRAM_16b_32768w_64k.i_SUMA180_32768X16X1BM8.Memory[num]
+          );
+        else if (slice == 2)
+          ret = $fscanf(
+              gf,
+              "%h\n",
+              TOP.i_Weight_SRAM_384k.SRAM_blk[2].i_SRAM_16b_32768w_64k.i_SUMA180_32768X16X1BM8.Memory[num]
+          );
+        else if (slice == 3)
+          ret = $fscanf(
+              gf,
+              "%h\n",
+              TOP.i_Weight_SRAM_384k.SRAM_blk[3].i_SRAM_16b_32768w_64k.i_SUMA180_32768X16X1BM8.Memory[num]
+          );
+        else if (slice == 4)
+          ret = $fscanf(
+              gf,
+              "%h\n",
+              TOP.i_Weight_SRAM_384k.SRAM_blk[4].i_SRAM_16b_32768w_64k.i_SUMA180_32768X16X1BM8.Memory[num]
+          );
+
+        num = num + 1;
+      end else begin  // num == 32768
+        slice = slice + 1;
+        num   = 0;
+      end
+    end
+    $fclose(gf);
+
+    // Read in weights
+    num = 0;
+    slice = 0;
+    gf = $fopen({prog_path, "/weight.hex"}, "r");
+    while (!$feof(
+        gf
+    )) begin
+      if (num < `WEIGHT_BLOCK_WORD_SIZE) begin
+        if (slice == 0)
+          ret = $fscanf(
+              gf,
+              "%h\n",
+              TOP.i_Weight_SRAM_384k.SRAM_blk[0].i_SRAM_16b_32768w_64k.i_SUMA180_32768X16X1BM8.Memory[num]
+          );
+        else if (slice == 1)
+          ret = $fscanf(
+              gf,
+              "%h\n",
+              TOP.i_Weight_SRAM_384k.SRAM_blk[1].i_SRAM_16b_32768w_64k.i_SUMA180_32768X16X1BM8.Memory[num]
+          );
+        else if (slice == 2)
+          ret = $fscanf(
+              gf,
+              "%h\n",
+              TOP.i_Weight_SRAM_384k.SRAM_blk[2].i_SRAM_16b_32768w_64k.i_SUMA180_32768X16X1BM8.Memory[num]
+          );
+        else if (slice == 3)
+          ret = $fscanf(
+              gf,
+              "%h\n",
+              TOP.i_Weight_SRAM_384k.SRAM_blk[3].i_SRAM_16b_32768w_64k.i_SUMA180_32768X16X1BM8.Memory[num]
+          );
+        else if (slice == 4)
+          ret = $fscanf(
+              gf,
+              "%h\n",
+              TOP.i_Weight_SRAM_384k.SRAM_blk[4].i_SRAM_16b_32768w_64k.i_SUMA180_32768X16X1BM8.Memory[num]
+          );
+
+        num = num + 1;
+      end else begin  // num == 32768
+        slice = slice + 1;
+        num   = 0;
+      end
+    end
+    $fclose(gf);
+
+    // Read in output
+    num = 0;
+    gf  = $fopen({prog_path, "/output.hex"}, "r");
     while (!$feof(
         gf
     )) begin
@@ -233,7 +234,7 @@ module top_tb;
       num = num + 1;
     end
     $fclose(gf);
-  end
+  end 
 
   initial begin
     #20 start = 1;
@@ -280,13 +281,12 @@ module top_tb;
     // $fsdbDumpvars("+struct", "+mda", TOP.i_param_mem);
     // $fsdbDumpvars("+struct", "+mda", TOP.i_Input_SRAM_384k);
     // $fsdbDumpvars("+struct", "+mda", TOP.i_Output_SRAM_384k);
-    // $fsdbDumpvars("+struct", "+mda", TOP.i_Filter_kernel_SRAM_180k);
+    // $fsdbDumpvars("+struct", "+mda", TOP.i_Weight_SRAM_384k);
     // $fsdbDumpvars("+struct", "+mda", TOP.i_Bias_SRAM_2k);
 `endif
   end
 
-  task check(input integer word_begin, input integer word_end,
-             output integer err_cnt);
+  task check(input integer word_begin, input integer word_end, output integer err_cnt);
     begin
       err_cnt = 0;
       for (i = word_begin; i < word_end; i = i + 1) begin
@@ -304,7 +304,7 @@ module top_tb;
         else if (slice == 5)
           out = TOP.i_Output_SRAM_384k.SRAM_blk[5].i_SRAM_16b_32768w_64k.i_SUMA180_32768X16X1BM8.Memory[i % `INOUT_BLOCK_WORD_SIZE][7:0];
 
-        if (out === GOLDEN[i] | (out+1) === GOLDEN[i] | (out-1) === GOLDEN[i]) begin
+        if (out === GOLDEN[i] | (out + 1) === GOLDEN[i] | (out - 1) === GOLDEN[i]) begin
           $display("DM[%4d] = %h, pass", i, out);
         end else begin
           $display("DM[%4d] = %h, expect = %h", i, out, GOLDEN[i]);

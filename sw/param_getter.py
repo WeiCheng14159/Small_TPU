@@ -103,6 +103,7 @@ if __name__ == "__main__":
 
     getter = ParamGetter(model, q_scheme, hex_dir)
 
+    # TODO: Generate matrix multiplication dimension for this fc layer
     for layer in specific_layers:
         getter.get_weights(layer)
         getter.get_bias(layer)
