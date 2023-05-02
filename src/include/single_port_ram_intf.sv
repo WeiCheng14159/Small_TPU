@@ -3,7 +3,7 @@
 
 `include "define.v"
 
-interface SinglePortRamIntf;
+interface single_port_ram_intf;
 
   logic                   cs;
   logic                   oe;

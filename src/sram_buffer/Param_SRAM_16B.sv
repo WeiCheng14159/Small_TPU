@@ -1,8 +1,8 @@
 `include "include/single_port_ram_intf.sv"
 
 module Param_SRAM_16B (
-    input logic                    clk,
-          SinglePortRamIntf.memory mem
+    input logic                       clk,
+          single_port_ram_intf.memory mem
 );
 
   parameter AddressSize = 32;

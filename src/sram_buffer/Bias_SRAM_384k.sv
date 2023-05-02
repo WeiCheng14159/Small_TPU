@@ -4,8 +4,8 @@
 // Combine six 64kB SRAM into 384kB SRAM
 
 module Bias_SRAM_384k (
-    input logic                    clk,
-          SinglePortRamIntf.memory mem
+    input logic                       clk,
+          single_port_ram_intf.memory mem
 );
 
   logic        CK;

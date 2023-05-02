@@ -2,7 +2,7 @@
 `ifndef SYNC_FIFO_SV
 `define SYNC_FIFO_SV
 
-module SyncFifo #(
+module sync_fifo #(
     parameter DEPTH = 8,
     parameter WIDTH = 16
 ) (

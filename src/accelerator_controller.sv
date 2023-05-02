@@ -1,10 +1,10 @@
 `include "include/define.v"
 
-module AcceleratorController (
-    input                                   clk,
-    input                                   rstn,
-    output logic             [`STATE_W-1:0] curr_state,
-           SinglePortRamIntf                param_intf
+module accelerator_controller (
+    input                                      clk,
+    input                                      rstn,
+    output logic                [`STATE_W-1:0] curr_state,
+           single_port_ram_intf                param_intf
 );
 
   reg [`STATE_W-1:0] next_state;

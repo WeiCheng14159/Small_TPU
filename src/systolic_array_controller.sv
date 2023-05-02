@@ -2,16 +2,16 @@
 `include "systolic_array/systolic_array.sv"
 `include "sync_fifo.sv"
 
-module SystolicArrayController (
-    input  logic                            clk,
-    input  logic                            rstn,
-    output logic                            finish,
-    input  logic             [`STATE_W-1:0] curr_state,
-           SinglePortRamIntf                param_intf,
-           SinglePortRamIntf                weight_intf,
-           SinglePortRamIntf                bias_intf,
-           SinglePortRamIntf                input_intf,
-           SinglePortRamIntf                output_intf
+module systolic_array_controller (
+    input  logic                               clk,
+    input  logic                               rstn,
+    output logic                               finish,
+    input  logic                [`STATE_W-1:0] curr_state,
+           single_port_ram_intf                param_intf,
+           single_port_ram_intf                weight_intf,
+           single_port_ram_intf                bias_intf,
+           single_port_ram_intf                input_intf,
+           single_port_ram_intf                output_intf
 );
   localparam TILE_DIM = 64;
 
@@ -60,10 +60,10 @@ module SystolicArrayController (
   logic [0:`DATA_WIDTH-1] row_fifo_to_array[0:TILE_DIM-1];
   logic [0:TILE_DIM-1] row_fifio_full, row_fifo_empty;
 
-  SyncFifo #(
+  sync_fifo #(
       .DEPTH(8),
       .WIDTH(`DATA_WIDTH)
-  ) i_RowSyncFifo[0:TILE_DIM-1] (
+  ) row_sync_fifo[0:TILE_DIM-1] (
       .clk(clk),
       .rstn(rstn),
       .w_en(row_fifo_wen),
@@ -80,10 +80,10 @@ module SystolicArrayController (
   logic [0:`DATA_WIDTH-1] col_fifo_to_array[0:TILE_DIM-1];
   logic [0:TILE_DIM-1] col_fifio_full, col_fifo_empty;
 
-  SyncFifo #(
+  sync_fifo #(
       .DEPTH(8),
       .WIDTH(`DATA_WIDTH)
-  ) i_ColumnSyncFiFo[0:TILE_DIM-1] (
+  ) col_sync_fifo[0:TILE_DIM-1] (
       .clk(clk),
       .rstn(rstn),
       .w_en(col_fifo_wen),
@@ -103,9 +103,9 @@ module SystolicArrayController (
     end
   endgenerate
 
-  SystolicArray #(
+  systolic_array #(
       .TILE_DIM(TILE_DIM)
-  ) i_SystolicArray (
+  ) i_systolic_array (
       .clk(clk),
       .rstn(rstn),
       .enb(sa_step),

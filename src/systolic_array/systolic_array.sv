@@ -4,7 +4,7 @@
 `ifndef SYSTOLIC_ARRAY_SV
 `define SYSTOLIC_ARRAY_SV
 
-module SystolicArray #(
+module systolic_array #(
     parameter TILE_DIM = 64
 ) (
     input logic clk,

@@ -14,11 +14,11 @@ module top (
 );
 
   // Interface
-  SinglePortRamIntf param_intf ();
-  SinglePortRamIntf input_intf ();
-  SinglePortRamIntf bias_intf ();
-  SinglePortRamIntf weight_intf ();
-  SinglePortRamIntf output_intf ();
+  single_port_ram_intf param_intf ();
+  single_port_ram_intf input_intf ();
+  single_port_ram_intf bias_intf ();
+  single_port_ram_intf weight_intf ();
+  single_port_ram_intf output_intf ();
 
   Param_SRAM_16B i_param_mem (
       .clk(clk),
@@ -45,7 +45,7 @@ module top (
       .mem(bias_intf)
   );
 
-  TensorAccelerator i_TensorAccelerator (
+  tensor_accelerator i_tensor_accelerator (
       .rstn(rstn),
       .clk(clk),
       .start(start_i),

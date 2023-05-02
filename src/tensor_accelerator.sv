@@ -3,32 +3,32 @@
 `include "accelerator_controller.sv"
 `include "systolic_array_controller.sv"
 
-module TensorAccelerator (
+module tensor_accelerator (
     input  logic       clk,
     input  logic       rstn,
     input  logic       start,
     input  logic [3:0] mode,
     output logic       finish,
 
-    SinglePortRamIntf.compute param_intf,
-    SinglePortRamIntf.compute weight_intf,
-    SinglePortRamIntf.compute bias_intf,
-    SinglePortRamIntf.compute input_intf,
-    SinglePortRamIntf.compute output_intf
+    single_port_ram_intf.compute param_intf,
+    single_port_ram_intf.compute weight_intf,
+    single_port_ram_intf.compute bias_intf,
+    single_port_ram_intf.compute input_intf,
+    single_port_ram_intf.compute output_intf
 );
 
   /* Write your code here */
 
   wire [`STATE_W-1:0] curr_state;
 
-  AcceleratorController i_AcceleratorController (
+  accelerator_controller i_accelerator_controller (
       .clk(clk),
       .rstn(rstn),
       .curr_state(curr_state),
       .param_intf(param_intf)
   );
 
-  SystolicArrayController i_SystolicArrayController (
+  systolic_array_controller i_systolic_array_controller (
       .clk(clk),
       .rstn(rstn),
       .finish(finish),
