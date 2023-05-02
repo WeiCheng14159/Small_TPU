@@ -34,7 +34,7 @@ printf "$def_pattern" "\`define STATE_W"    "${len}"
 printf "\n// Macro from template\n"
 printf "$def_pattern" "\`define BUF_SIZE"             "8'd66"
 
-printf "$def_pattern" "\`define DATA_WIDTH"               "20"
+printf "$def_pattern" "\`define DATA_WIDTH"               "16"
 printf "$def_pattern" "\`define ADDR_WIDTH"               "20"
 
 printf "$def_pattern" "\`define EMPTY_ADDR"           "{\`ADDR_WIDTH{1'b0}}"
