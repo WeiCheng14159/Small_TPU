@@ -16,12 +16,12 @@ module accelerator_controller (
   end
 
   // Next State Logic (C)
-  always @(*) begin
+  always_comb begin
     next_state = 0;
     if (~rstn) begin
       next_state[`S_IDLE] = 1'b1;
     end else begin
-      case (1'b1)
+      unique case (1'b1)
         curr_state[`S_IDLE]: begin
           next_state[`S_IDLE] = 1'b1;
         end

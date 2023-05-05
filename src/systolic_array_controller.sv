@@ -1,6 +1,8 @@
 `include "include/define.v"
 `include "systolic_array/systolic_array.sv"
 `include "sync_fifo.sv"
+`include "fifo_consumer.sv"
+
 
 module systolic_array_controller (
     input  logic                               clk,
@@ -23,40 +25,38 @@ module systolic_array_controller (
   // TODO: Implement necessary buffer 
 
   // array_enb
-  localparam FSM_IDLE = 0, FSM_REQ = 1, FSM_HALT = 2, FSM_END = 3;
-  logic [0:FSM_END] sa_curr_state, sa_next_state;
+  localparam IDLE = 0, REQ = 1, HALT = 2, FIN = 3;
+  typedef enum logic [FIN:0] {
+    S_IDLE = 1 << IDLE,
+    S_REQ  = 1 << REQ,
+    S_HALT = 1 << HALT,
+    S_FIN  = 1 << FIN
+  } state_t;
+
+  state_t sa_curr_state, sa_next_state;
   logic sa_step, fifo_load, fifo_ready;
 
   always_ff @(posedge clk) begin
-    if (~rstn) sa_curr_state <= 0;
+    if (~rstn) sa_curr_state <= S_IDLE;
     else sa_curr_state <= sa_next_state;
   end
 
   always_comb begin
-    sa_next_state <= 0;
-    case (1'b1)
-      sa_curr_state[FSM_IDLE]: begin
-        sa_next_state[FSM_REQ] = (curr_state[`S_LOAD]) ? 1'b1 : 1'b0;
-      end
-      sa_curr_state[FSM_REQ]: begin
-        if (~curr_state[`S_LOAD]) sa_next_state[FSM_IDLE] = 1'b1;
-        else if (fifo_load) sa_next_state[FSM_HALT] = 1'b1;
-        else sa_next_state[FSM_REQ] = 1'b1;
-      end
-      sa_curr_state[FSM_HALT]: begin
-        if (fifo_ready) sa_next_state[FSM_REQ] = 1'b1;
-        else sa_next_state[FSM_HALT] = 1'b1;
-      end
-      sa_curr_state[FSM_END]: begin
-        sa_next_state[FSM_END] = 1'b1;
-      end
-      default: ;
+    unique case (1'b1)
+      sa_curr_state[IDLE]: sa_next_state = S_REQ;
+      sa_curr_state[REQ]:  sa_next_state = S_REQ;
+      sa_curr_state[HALT]: sa_next_state = S_FIN;
+      sa_curr_state[FIN]:  sa_next_state = S_FIN;
     endcase
   end
 
+  // Connection between fifo and systolic array 
+
   // Row-direction fifo 
   logic [TILE_DIM-1:0] row_fifo_wen, row_fifo_ren;
+  logic [0:`DATA_WIDTH-1] row_fifo_from_supplier[0:TILE_DIM-1];
   logic [0:`DATA_WIDTH-1] row_fifo_from_mem[0:TILE_DIM-1];
+  logic [0:`DATA_WIDTH-1] row_fifo_to_consumer[0:TILE_DIM-1];
   logic [0:`DATA_WIDTH-1] row_fifo_to_array[0:TILE_DIM-1];
   logic [0:TILE_DIM-1] row_fifio_full, row_fifo_empty;
 
@@ -69,15 +69,37 @@ module systolic_array_controller (
       .w_en(row_fifo_wen),
       .r_en(row_fifo_ren),
       .data_in(row_fifo_from_mem),
-      .data_out(row_fifo_to_array),
+      .data_out(row_fifo_to_consumer),
       .full(row_fifio_full),
       .empty(row_fifo_empty)
   );
 
+  // Row-direction fifo consumer
+  genvar row_cons_i;
+  generate
+    for (row_cons_i = 0; row_cons_i < TILE_DIM; row_cons_i++) begin : ROW_FIFO_CONSUMER
+      fifo_consumer #(
+          .WIDTH(`DATA_WIDTH)
+      ) row_fifo_consumer (
+          .clk(clk),
+          .rstn(rstn),
+          .empty(row_fifo_empty[row_cons_i]),
+          .from_fifo(row_fifo_to_consumer[row_cons_i]),
+          // .base_addr(0),
+          // .addr_step(4),
+          // .end_addr(400),
+          .r_en(row_fifo_ren[row_cons_i]),
+          .to_array(row_fifo_to_array[row_cons_i])
+      );
+    end
+  endgenerate
+
   // Column-direction fifo 
   logic [TILE_DIM-1:0] col_fifo_wen, col_fifo_ren;
   logic [0:`DATA_WIDTH-1] col_fifo_from_mem[0:TILE_DIM-1];
+  logic [0:`DATA_WIDTH-1] col_fifo_from_supplier[0:TILE_DIM-1];
   logic [0:`DATA_WIDTH-1] col_fifo_to_array[0:TILE_DIM-1];
+  logic [0:`DATA_WIDTH-1] col_fifo_to_consumer[0:TILE_DIM-1];
   logic [0:TILE_DIM-1] col_fifio_full, col_fifo_empty;
 
   sync_fifo #(
@@ -93,6 +115,26 @@ module systolic_array_controller (
       .full(col_fifio_full),
       .empty(col_fifo_empty)
   );
+
+  // Column-direction fifo consumer
+  genvar col_cons_i;
+  generate
+    for (col_cons_i = 0; col_cons_i < TILE_DIM; col_cons_i++) begin : COL_FIFO_CONSUMER
+      fifo_consumer #(
+          .WIDTH(`DATA_WIDTH)
+      ) col_fifo_consumer (
+          .clk(clk),
+          .rstn(rstn),
+          .empty(col_fifo_empty[col_cons_i]),
+          .from_fifo(col_fifo_to_consumer[col_cons_i]),
+          // .base_addr(0),
+          // .addr_step(4),
+          // .end_addr(400),
+          .r_en(col_fifo_ren[col_cons_i]),
+          .to_array(col_fifo_to_array[col_cons_i])
+      );
+    end
+  endgenerate
 
   // Connection between fifo and systolic array 
   genvar i;

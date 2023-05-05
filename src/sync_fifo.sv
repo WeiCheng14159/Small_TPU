@@ -6,14 +6,16 @@ module sync_fifo #(
     parameter DEPTH = 8,
     parameter WIDTH = 16
 ) (
-    input logic clk,
+    input  logic             clk,
     rstn,
-    input logic w_en,
-    r_en,
-    input logic [WIDTH-1:0] data_in,
+    // Supplier side 
+    input  logic             w_en,
+    input  logic [WIDTH-1:0] data_in,
+    output logic             full,
+    // Consumer side
+    input  logic             r_en,
     output logic [WIDTH-1:0] data_out,
-    output logic full,
-    empty
+    output logic             empty
 );
 
   logic [$clog2(DEPTH)-1:0] w_ptr, r_ptr;
