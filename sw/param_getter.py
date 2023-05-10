@@ -27,7 +27,8 @@ class ParamGetter:
                 tensor_w = layer.get_weights()[0]
                 print(f"Layer {layer_name} weights shape: {tensor_w.shape}")
                 save_weights(tensor_w,
-                             os.path.join(self.store_path, layer_name+"_w.hex"),
+                             os.path.join(self.store_path,
+                                          layer_name, "weight.hex"),
                              self.q_scheme)
                 # Plot weight distributions and save as an image
                 # plot_distribution(tensor_w, str(layer_name+"_w.png"))
@@ -40,7 +41,7 @@ class ParamGetter:
                 print(f"Layer {layer_name} bias shape: {tensor_b.shape}")
                 save_weights(tensor_b,
                              os.path.join(self.store_path,
-                                          layer_name+"_bias.hex"),
+                                          layer_name, "bias.hex"),
                              self.q_scheme)
                 # Plot weight distributions and save as an image
                 # plot_distribution(tensor_b, str(layer_name+"_bias.png"))
@@ -53,7 +54,7 @@ class ParamGetter:
         print(f"Layer {layer_name} output shape: {tensor_out.shape}")
         # Save outputs as text file
         save_weights(tensor_out,
-                     os.path.join(self.store_path, layer_name+"_out.hex"),
+                     os.path.join(self.store_path, layer_name, "output.hex"),
                      self.q_scheme)
         # Plot weight distributions and save as an image
         # plot_distribution(tensor_out, str(layer_name+"_out.png"))
@@ -99,7 +100,8 @@ if __name__ == "__main__":
 
     # Save inputs (of format: NHWC) as text file
     hex_dir = os.path.join(os.getcwd(), 'hex')
-    save_inputs(input_x, os.path.join(hex_dir, "quant_input.hex"), q_scheme)
+    save_inputs(input_x, os.path.join(
+        hex_dir, "quant_fc1", "input.hex"), q_scheme)
 
     getter = ParamGetter(model, q_scheme, hex_dir)
 
