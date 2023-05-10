@@ -34,7 +34,7 @@ module top_tb;
   logic [3:0] epu_mode;
 
   logic signed [7:0] GOLDEN[200000:0];
-  logic [31:0] param[3:0];
+  logic [31:0] param [0:3];
   // GOLDEN
   logic signed [7:0] out;
 
@@ -71,11 +71,10 @@ module top_tb;
       epu_mode = 1 << `IDLE_MODE;
     end
 
-    // TODO: Read in parameter
-    // $readmemh({prog_path, "/param.hex"}, param);
-    // for (i = 0; i < 4; i = i + 1) begin
-    //   TOP.i_param_mem.Memory[i] = param[i];
-    // end
+    $readmemh({prog_path, "/param.hex"}, param);
+    for (i = 0; i < 3; i = i + 1) begin
+      TOP.i_param_mem.Memory[i] = param[i];
+    end
 
     // Read in input
     num = 0;
@@ -267,22 +266,22 @@ module top_tb;
     $fsdbDumpvars();
     $fsdbDumpvars(1, TOP.param_intf);
     $fsdbDumpvars(1, TOP.input_intf);
-    $fsdbDumpvars(1, TOP.base_kernel_intf);
-    $fsdbDumpvars(1, TOP.filter_kernel_intf);
+    $fsdbDumpvars(1, TOP.bias_intf);
+    $fsdbDumpvars(1, TOP.weight_intf);
     $fsdbDumpvars(1, TOP.output_intf);
 `elsif FSDB_ALL
     $fsdbDumpfile(`FSDB_FILE);
     $fsdbDumpvars("+struct", "+mda", TOP);
     $fsdbDumpvars(1, TOP.param_intf);
     $fsdbDumpvars(1, TOP.input_intf);
-    $fsdbDumpvars(1, TOP.base_kernel_intf);
-    $fsdbDumpvars(1, TOP.filter_kernel_intf);
+    $fsdbDumpvars(1, TOP.bias_intf);
+    $fsdbDumpvars(1, TOP.weight_intf);
     $fsdbDumpvars(1, TOP.output_intf);
     // $fsdbDumpvars("+struct", "+mda", TOP.i_param_mem);
     // $fsdbDumpvars("+struct", "+mda", TOP.i_Input_SRAM_384k);
     // $fsdbDumpvars("+struct", "+mda", TOP.i_Output_SRAM_384k);
     // $fsdbDumpvars("+struct", "+mda", TOP.i_Weight_SRAM_384k);
-    // $fsdbDumpvars("+struct", "+mda", TOP.i_Bias_SRAM_2k);
+    // $fsdbDumpvars("+struct", "+mda", TOP.i_Bias_SRAM_384k);
 `endif
   end
 
