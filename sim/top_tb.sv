@@ -71,11 +71,10 @@ module top_tb;
       epu_mode = 1 << `IDLE_MODE;
     end
 
-    // TODO: Read in parameter
-    // $readmemh({prog_path, "/param.hex"}, param);
-    // for (i = 0; i < 4; i = i + 1) begin
-    //   TOP.i_param_mem.Memory[i] = param[i];
-    // end
+    $readmemh({prog_path, "/param.hex"}, param);
+    for (i = 0; i < 3; i = i + 1) begin
+      TOP.i_param_mem.Memory[i] = param[i];
+    end
 
     // Read in input
     num = 0;
