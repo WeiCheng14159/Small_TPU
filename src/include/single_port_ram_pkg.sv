@@ -6,8 +6,8 @@ package single_port_ram_pkg;
   localparam CS_DIS = 1'b0;
   localparam OE_ENB = 1'b1;
   localparam OE_DIS = 1'b0;
-  localparam WREQ_ENB = 1'b1;
-  localparam WREQ_DIS = 1'b0;
+  localparam WREQ_ENB = 1'b0;
+  localparam WREQ_DIS = 1'b1;
 endpackage
 
 `endif

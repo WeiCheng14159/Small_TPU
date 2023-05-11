@@ -22,7 +22,7 @@ module tensor_accelerator
   /* Write your code here */
 
   accelerator_state_t curr_state;
-  logic done;
+  logic sa_done;
   logic [31:0] M, N, K;
 
   accelerator_controller i_accelerator_controller (.*);

@@ -9,17 +9,18 @@ module systolic_array_controller
   import systolic_array_pkg::*;
   import accelerator_pkg::*;
 (
-    input logic                       clk,
-    input logic                       rstn,
-    input accelerator_state_t         curr_state,
-    input logic                [31:0] M,
+    input  logic                       clk,
+    input  logic                       rstn,
+    input  accelerator_state_t         curr_state,
+    input  logic                [31:0] M,
     N,
     K,
-          single_port_ram_intf        param_intf,
-          single_port_ram_intf        weight_intf,
-          single_port_ram_intf        bias_intf,
-          single_port_ram_intf        input_intf,
-          single_port_ram_intf        output_intf
+    output logic                       sa_done,
+           single_port_ram_intf        param_intf,
+           single_port_ram_intf        weight_intf,
+           single_port_ram_intf        bias_intf,
+           single_port_ram_intf        input_intf,
+           single_port_ram_intf        output_intf
 );
   localparam TILE_DIM = 64;
 

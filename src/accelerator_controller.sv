@@ -8,7 +8,7 @@ module accelerator_controller
     input  logic                       rstn,
     input  logic                       start,
     output logic                       finish,
-    input  logic                       done,
+    input  logic                       sa_done,
     output logic                [31:0] M,
     N,
     K,
@@ -30,13 +30,13 @@ module accelerator_controller
     next_state = S_IDLE;
     unique case (1'b1)
       curr_state[IDLE_B]: begin
-        next_state = (start) ? S_IDLE : S_PARAM;
+        next_state = (start) ? S_PARAM : S_IDLE;
       end
       curr_state[PARAM_B]: begin
         next_state = load_param_done ? S_STREAM : S_PARAM;
       end
       curr_state[STREAM_B]: begin
-        next_state = done ? S_FIN : S_STREAM;
+        next_state = sa_done ? S_FIN : S_STREAM;
       end
       curr_state[IMG2COL_B]: begin
         next_state = S_IDLE;
@@ -48,30 +48,28 @@ module accelerator_controller
     endcase
   end
 
-  assign load_param_done   = (param_intf.addr == 3);
-  assign param_intf.W_data = EMPTY_DATA;
+  assign load_param_done = (param_intf.addr == 3);
 
   always_ff @(posedge clk) begin
     if (~rstn) begin
-      param_intf.cs <= CS_DIS;
-      param_intf.oe <= OE_DIS;
       param_intf.addr <= EMPTY_ADDR;
-      param_intf.W_req <= WREQ_DIS;
     end else if (curr_state == S_PARAM) begin
-      param_intf.cs <= CS_ENB;
-      param_intf.oe <= OE_ENB;
       param_intf.addr <= param_intf.addr + 1'b1;
-      param_intf.W_req <= WREQ_DIS;
     end
   end
+
+  assign param_intf.cs = (curr_state == S_PARAM) ? CS_ENB : CS_DIS;
+  assign param_intf.oe = (curr_state == S_PARAM) ? OE_ENB : OE_DIS;
+  assign param_intf.W_req = (curr_state == S_PARAM) ? WREQ_DIS : WREQ_ENB;
+  assign param_intf.W_data = EMPTY_DATA;
 
   always_ff @(posedge clk) begin
     if (~rstn) begin
       {M, N, K} <= {32'h0, 32'h0, 32'h0};
     end else if (curr_state == S_PARAM) begin
-      if (param_intf.addr == 0) M <= param_intf.R_data;
-      else if (param_intf.addr == 1) N <= param_intf.R_data;
+      if (param_intf.addr == 1) M <= param_intf.R_data;
       else if (param_intf.addr == 2) K <= param_intf.R_data;
+      else if (param_intf.addr == 3) N <= param_intf.R_data;
     end
   end
 
