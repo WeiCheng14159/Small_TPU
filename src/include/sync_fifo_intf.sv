@@ -1,5 +1,5 @@
-`ifndef FIFO_INTF
-`define FIFO_INTF
+`ifndef SYNC_FIFO_INTF_SV
+`define SYNC_FIFO_INTF_SV
 
 // SyncFIFO Interface with Parameterized Data Width
 interface sync_fifo_intf #(

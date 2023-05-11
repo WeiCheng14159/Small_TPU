@@ -1,9 +1,11 @@
 `include "include/single_port_ram_intf.sv"
-`include "include/define.v"
+`include "include/pkg_include.sv"
 `include "accelerator_controller.sv"
 `include "systolic_array_controller.sv"
 
-module tensor_accelerator (
+module tensor_accelerator
+  import accelerator_pkg::*;
+(
     input  logic       clk,
     input  logic       rstn,
     input  logic       start,
@@ -19,25 +21,12 @@ module tensor_accelerator (
 
   /* Write your code here */
 
-  wire [`STATE_W-1:0] curr_state;
+  accelerator_state_t curr_state;
+  logic done;
+  logic [31:0] M, N, K;
 
-  accelerator_controller i_accelerator_controller (
-      .clk(clk),
-      .rstn(rstn),
-      .curr_state(curr_state),
-      .param_intf(param_intf)
-  );
+  accelerator_controller i_accelerator_controller (.*);
 
-  systolic_array_controller i_systolic_array_controller (
-      .clk(clk),
-      .rstn(rstn),
-      .finish(finish),
-      .curr_state(curr_state),
-      .param_intf(param_intf),
-      .weight_intf(weight_intf),
-      .bias_intf(bias_intf),
-      .input_intf(input_intf),
-      .output_intf(output_intf)
-  );
+  systolic_array_controller i_systolic_array_controller (.*);
 
 endmodule

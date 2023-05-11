@@ -1,7 +1,3 @@
-
-`ifndef SYNC_FIFO_SV
-`define SYNC_FIFO_SV
-
 module sync_fifo #(
     parameter DEPTH = 8,
     parameter WIDTH = 16
@@ -49,5 +45,3 @@ module sync_fifo #(
   assign full  = ((w_ptr + 1'b1) == r_ptr);
   assign empty = (w_ptr == r_ptr);
 endmodule
-
-`endif

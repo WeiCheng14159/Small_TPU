@@ -1,8 +1,3 @@
-`include "define.v"
-
-`ifndef FIFO_SUPPLIER
-`define FIFO_SUPPLIER
-
 module fifo_supplier #(
     parameter WIDTH = 16
 ) (
@@ -54,5 +49,3 @@ module fifo_supplier #(
   end
 
 endmodule
-
-`endif

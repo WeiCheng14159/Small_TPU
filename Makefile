@@ -75,10 +75,6 @@ cp_tb_src: gen_hex
 	cd $(BUILD_DIR); \
 	cp $(TB_SRC) .;
 
-gen_def: 
-	cd $(INC_DIR); \
-	bash gen_def.sh > define.v;
-
 cp_CHIP_v:
 	cp $(SRC_DIR)/CHIP.v $(BUILD_DIR);
 
@@ -95,7 +91,7 @@ format:
 	find $(SRC_DIR) -name "*.sv" -or -name "*.v" -or -name "*.svh" | xargs verible-verilog-format --inplace
 
 # Run RTL simulation
-rtl0: $(BUILD) gen_def 
+rtl0: $(BUILD)  
 	cd $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
 	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
@@ -104,7 +100,7 @@ rtl0: $(BUILD) gen_def
 	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
 	+prog_path=$(HEX_DIR)/quant_fc1 \
 
-rtl1: $(BUILD) gen_def
+rtl1: $(BUILD) 
 	cd $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
 	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
@@ -113,7 +109,7 @@ rtl1: $(BUILD) gen_def
 	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
 	+prog_path=$(HEX_DIR)/quant_fc2 \
 
-rtl2: $(BUILD) gen_def
+rtl2: $(BUILD) 
 	cd $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
 	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
@@ -122,7 +118,7 @@ rtl2: $(BUILD) gen_def
 	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
 	+prog_path=$(HEX_DIR)/quant_fc3 \
 
-rtl3: $(BUILD) gen_def
+rtl3: $(BUILD) 
 	cd $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
 	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
@@ -131,7 +127,7 @@ rtl3: $(BUILD) gen_def
 	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
 	+prog_path=$(HEX_DIR)/conv3 \
 
-rtl4: $(BUILD) gen_def
+rtl4: $(BUILD) 
 	cd $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
 	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
@@ -140,7 +136,7 @@ rtl4: $(BUILD) gen_def
 	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
 	+prog_path=$(HEX_DIR)/conv4 \
 
-rtl5: $(BUILD) gen_def
+rtl5: $(BUILD) 
 	cd $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
 	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
@@ -149,7 +145,7 @@ rtl5: $(BUILD) gen_def
 	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
 	+prog_path=$(HEX_DIR)/conv5 \
 
-rtl6: $(BUILD) gen_def
+rtl6: $(BUILD) 
 	cd $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
 	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
@@ -158,7 +154,7 @@ rtl6: $(BUILD) gen_def
 	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
 	+prog_path=$(HEX_DIR)/conv6 \
 
-rtl7: $(BUILD) gen_def
+rtl7: $(BUILD) 
 	cd $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
 	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
@@ -167,7 +163,7 @@ rtl7: $(BUILD) gen_def
 	+define+FSDB_FILE=\"$(TOP).fsdb\"$(FSDB_DEF) \
 	+prog_path=$(HEX_DIR)/conv7 \
 
-rtl8: $(BUILD) gen_def
+rtl8: $(BUILD) 
 	cd $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv \
 	+incdir+$(SRC_DIR)+$(SIM_DIR)+$(INC_DIR) \
@@ -182,14 +178,14 @@ nw: $(BUILD)
 	nWave -f $(TOP).fsdb -sswr $(NC_DIR)/signal.rc +access+r +nc64bit &
 
 # Run synthesize with Design Compiler
-synthesize: $(BUILD) syn_init gen_def
+synthesize: $(BUILD) syn_init 
 	rm -rf $(SYN_DIR)/*; \
 	cd $(BUILD_DIR); \
 	cp $(SCRIPT_DIR)/${PROC}/synopsys_dc.setup.$(PROC) $(BUILD_DIR)/.synopsys_dc.setup; \
 	dcnxt_shell -f $(SCRIPT_DIR)/dc_syn.tcl -x "set proc ${PROC}";
 
 # Run gate-level simulation
-syn0: $(BUILD) cp_tb_src syn_init gen_def
+syn0: $(BUILD) cp_tb_src syn_init 
 	cd $(BUILD_DIR); \
 	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
@@ -203,7 +199,7 @@ syn0: $(BUILD) cp_tb_src syn_init gen_def
 	+prog_path=$(HEX_DIR)/conv0 \
 	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
 
-syn1: $(BUILD) syn_init syn_init gen_def
+syn1: $(BUILD) syn_init syn_init 
 	cd $(BUILD_DIR); \
 	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
@@ -217,7 +213,7 @@ syn1: $(BUILD) syn_init syn_init gen_def
 	+prog_path=$(HEX_DIR)/conv1 \
 	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
 
-syn2: $(BUILD) syn_init syn_init gen_def
+syn2: $(BUILD) syn_init syn_init 
 	cd $(BUILD_DIR); \
 	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
@@ -231,7 +227,7 @@ syn2: $(BUILD) syn_init syn_init gen_def
 	+prog_path=$(HEX_DIR)/conv2 \
 	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
 
-syn3: $(BUILD) syn_init syn_init gen_def
+syn3: $(BUILD) syn_init syn_init 
 	cd $(BUILD_DIR); \
 	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
@@ -245,7 +241,7 @@ syn3: $(BUILD) syn_init syn_init gen_def
 	+prog_path=$(HEX_DIR)/conv3 \
 	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
 
-syn4: $(BUILD) syn_init syn_init gen_def
+syn4: $(BUILD) syn_init syn_init 
 	cd $(BUILD_DIR); \
 	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
@@ -259,7 +255,7 @@ syn4: $(BUILD) syn_init syn_init gen_def
 	+prog_path=$(HEX_DIR)/conv4 \
 	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
 
-syn5: $(BUILD) syn_init syn_init gen_def
+syn5: $(BUILD) syn_init syn_init 
 	cd $(BUILD_DIR); \
 	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
@@ -273,7 +269,7 @@ syn5: $(BUILD) syn_init syn_init gen_def
 	+prog_path=$(HEX_DIR)/conv5 \
 	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
 
-syn6: $(BUILD) syn_init syn_init gen_def
+syn6: $(BUILD) syn_init syn_init 
 	cd $(BUILD_DIR); \
 	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
@@ -287,7 +283,7 @@ syn6: $(BUILD) syn_init syn_init gen_def
 	+prog_path=$(HEX_DIR)/conv6 \
 	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
 
-syn7: $(BUILD) syn_init syn_init gen_def
+syn7: $(BUILD) syn_init syn_init 
 	cd $(BUILD_DIR); \
 	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
@@ -301,7 +297,7 @@ syn7: $(BUILD) syn_init syn_init gen_def
 	+prog_path=$(HEX_DIR)/conv7 \
 	+define+SDFFILE=\"$(SYN_DIR)/$(TOP)_syn.sdf\"
 
-syn8: $(BUILD) syn_init syn_init gen_def
+syn8: $(BUILD) syn_init syn_init 
 	cd $(BUILD_DIR); \
 	cp $(SYN_DIR)/$(TOP)_syn.sdf $(BUILD_DIR); \
 	ncverilog $(SIM_DIR)/$(TB_TOP).sv $(SYN_DIR)/$(TOP)_syn.v \
@@ -318,7 +314,7 @@ syn8: $(BUILD) syn_init syn_init gen_def
 ### chip-level ###
 
 # Run CHIP-level synthesize with Design Compiler
-synthesize_chip: $(BUILD) syn_init gen_def cp_CHIP_v
+synthesize_chip: $(BUILD) syn_init cp_CHIP_v
 	rm -rf $(SYN_DIR)/*; \
 	cd $(BUILD_DIR); \
 	cp $(SCRIPT_DIR)/${PROC}/synopsys_dc.setup.$(PROC) $(BUILD_DIR)/.synopsys_dc.setup; \

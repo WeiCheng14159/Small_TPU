@@ -5,20 +5,39 @@
 `include "sram_buffer/Param_SRAM_16B.sv"  // Param SRAM (16B)
 `include "tensor_accelerator.sv"
 
-module top (
-    input  logic       clk,
-    input  logic       rstn,
-    input  logic       start_i,
-    input  logic [3:0] mode_i,
-    output logic       finish_o
+module top
+  import single_port_ram_pkg::*;
+  import systolic_array_pkg::*;
+  import accelerator_pkg::*;
+(
+    input  logic                  clk,
+    input  logic                  rstn,
+    input  logic                  start_i,
+    input  logic [MODE_WIDTH-1:0] mode_i,
+    output logic                  finish_o
 );
 
   // Interface
-  single_port_ram_intf param_intf ();
-  single_port_ram_intf input_intf ();
-  single_port_ram_intf bias_intf ();
-  single_port_ram_intf weight_intf ();
-  single_port_ram_intf output_intf ();
+  single_port_ram_intf #(
+      .ADDR_WIDTH(ADDR_WIDTH),
+      .DATA_WIDTH(DATA_WIDTH)
+  ) param_intf ();
+  single_port_ram_intf #(
+      .ADDR_WIDTH(ADDR_WIDTH),
+      .DATA_WIDTH(DATA_WIDTH)
+  ) input_intf ();
+  single_port_ram_intf #(
+      .ADDR_WIDTH(ADDR_WIDTH),
+      .DATA_WIDTH(DATA_WIDTH)
+  ) bias_intf ();
+  single_port_ram_intf #(
+      .ADDR_WIDTH(ADDR_WIDTH),
+      .DATA_WIDTH(DATA_WIDTH)
+  ) weight_intf ();
+  single_port_ram_intf #(
+      .ADDR_WIDTH(ADDR_WIDTH),
+      .DATA_WIDTH(DATA_WIDTH)
+  ) output_intf ();
 
   Param_SRAM_16B i_param_mem (
       .clk(clk),
