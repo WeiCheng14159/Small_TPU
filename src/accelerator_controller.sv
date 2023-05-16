@@ -48,6 +48,7 @@ module accelerator_controller
     endcase
   end
 
+  // Read param buffer
   assign load_param_done = (param_intf.addr == 3);
 
   always_ff @(posedge clk) begin
@@ -72,6 +73,8 @@ module accelerator_controller
       else if (param_intf.addr == 3) N <= param_intf.R_data;
     end
   end
+
+  // 
 
   assign finish = (curr_state == S_FIN);
 

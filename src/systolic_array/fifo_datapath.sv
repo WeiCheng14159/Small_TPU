@@ -13,6 +13,9 @@ module fifo_datapath
 ) (
     input  logic                                         clk,
     input  logic                                         rstn,
+    input  logic                                         enb,
+    output logic                                         stall,
+    done,
     input  logic                        [ADDR_WIDTH-1:0] base_addr,
     input  logic                        [          31:0] K,
     output logic                        [DATA_WIDTH-1:0] bus_to_compute[0:TILE_DIM-1],
@@ -21,6 +24,7 @@ module fifo_datapath
 
   // Bus: fifo consumer <-> systolic array 
   logic [0:TILE_DIM * DATA_WIDTH - 1] bus_to_array;
+  logic [TILE_DIM-1:0] stall_vec, done_vec;
 
   // Bus: fifo <-> producer and consumer
   sync_fifo_producer_intf #(.DATA_WIDTH(DATA_WIDTH)) producer_intf[TILE_DIM] ();
@@ -67,6 +71,7 @@ module fifo_datapath
           .WIDTH(DATA_WIDTH)
       ) fifo_consumer (
           .*,
+          .stall(stall_vec[fifo_idx]),
           .consumer(consumer_intf[fifo_idx]),
           .to_systolic_array(bus_to_compute[fifo_idx])
       );
@@ -85,6 +90,7 @@ module fifo_datapath
           .BURST_SIZE(4)
       ) fifo_producer (
           .*,
+          .done(done_vec[fifo_idx]),
           .request(request[fifo_idx]),
           .grant(grant[fifo_idx]),
           .addr_begin(addr_begin),
@@ -111,4 +117,8 @@ module fifo_datapath
       .sel(select),
       .buff_intf(buffer_intf)
   );
+
+  // stall caused by empty fifo
+  assign stall = |stall_vec;
+  assign done  = &done_vec;
 endmodule

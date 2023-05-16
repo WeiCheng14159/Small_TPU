@@ -7,6 +7,8 @@ module fifo_consumer
 ) (
     input logic clk,
     rstn,
+    enb,
+    output logic stall,
     // Consumer side
     sync_fifo_consumer_intf.to_consumer consumer,
     output logic [WIDTH-1:0] to_systolic_array
@@ -27,10 +29,13 @@ module fifo_consumer
   //   endcase
   // end
 
-  assign consumer.r_en = ~consumer.empty;
+  // assign consumer.r_en = ~consumer.empty;
+  assign consumer.r_en = (enb & ~consumer.empty);
+  assign stall = consumer.empty;
   always_ff @(posedge clk) begin
     if (~rstn) to_systolic_array <= {WIDTH{1'b0}};
     else if (~consumer.empty) to_systolic_array <= consumer.data_out;
+    else to_systolic_array <= {WIDTH{1'b0}};
   end
 
 endmodule

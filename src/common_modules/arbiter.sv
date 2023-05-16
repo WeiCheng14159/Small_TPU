@@ -44,11 +44,20 @@ module arbiter #(
   assign token_wrap = {token, token};
   assign next       = ~|(token & request);
 
-  always @(posedge clk) grant <= token & request;
+  always @(posedge clk) begin
+    if (~rstn) grant <= {NUM_PORTS{1'b0}};
+    else grant <= token & request;
 
-  always @(posedge clk) select <= ff1(token & request);
+  end
+  always @(posedge clk) begin
+    if (~rstn) select <= {SEL_WIDTH{1'b0}};
+    else select <= ff1(token & request);
+  end
 
-  always @(posedge clk) active <= |(token & request);
+  always @(posedge clk) begin
+    if (~rstn) active <= 1'b0;
+    else active <= |(token & request);
+  end
 
   integer yy;
   always @(posedge clk)

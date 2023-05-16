@@ -9,6 +9,8 @@ module fifo_producer
 ) (
     input logic clk,
     rstn,
+    enb,
+    output logic done,
     // module control signal 
     output logic request,
     input logic grant,
@@ -27,7 +29,6 @@ module fifo_producer
 );
 
   fifo_producer_state_t curr_state, next_state;
-  logic transfer_done;
   logic [31:0] burst_cnt;
   logic fifo_ready;
 
@@ -36,18 +37,22 @@ module fifo_producer
     else curr_state <= next_state;
   end
 
-  assign transfer_done = (to_buffer_addr > addr_end);
-  assign request = !transfer_done;
+  assign done = curr_state == DONE;
+  assign request = enb;
   always_ff @(posedge clk) begin
-    if (~rstn) to_buffer_addr <= addr_begin;
+    if (~rstn) to_buffer_addr <= {ADDR_WIDTH{1'b0}};
+    else if (curr_state == IDLE) to_buffer_addr <= addr_begin;
     else if (grant) to_buffer_addr <= to_buffer_addr - addr_nstep;
   end
 
-  assign fifo_ready = (grant && ~transfer_done && ~producer.full);
+  assign fifo_ready = (grant && ~done && ~producer.full && enb);
   always_comb begin
     unique case (1'b1)
-      curr_state[IDLE_B]: next_state = fifo_ready ? BURST : IDLE;
-      curr_state[BURST_B]: next_state = (burst_cnt == BURST_SIZE) ? IDLE : BURST;
+      curr_state[IDLE_B]: next_state = WAIT;
+      curr_state[WAIT_B]: next_state = fifo_ready ? BURST : WAIT;
+      curr_state[BURST_B]:
+      next_state = (burst_cnt == BURST_SIZE) ? (to_buffer_addr == addr_end) ? DONE : WAIT : BURST;
+      curr_state[DONE_B]: next_state = IDLE;
       default: next_state = IDLE;
     endcase
   end

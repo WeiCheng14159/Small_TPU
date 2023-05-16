@@ -24,7 +24,7 @@ module tensor_accelerator
   accelerator_state_t curr_state;
   logic sa_done;
   logic [31:0] M, N, K;
-
+  logic [31:0] blk_row_idx, blk_col_idx;
   accelerator_controller i_accelerator_controller (.*);
 
   systolic_array_controller i_systolic_array_controller (.*);

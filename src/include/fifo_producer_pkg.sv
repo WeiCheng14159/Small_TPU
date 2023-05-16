@@ -4,11 +4,15 @@
 package fifo_producer_pkg;
   // FSM
   localparam IDLE_B = 0;
-  localparam BURST_B = 1;
+  localparam WAIT_B = 1;
+  localparam BURST_B = 2;
+  localparam DONE_B = 3;
 
-  typedef enum logic [BURST_B:0] {
+  typedef enum logic [DONE_B:0] {
     IDLE  = 1 << IDLE_B,
-    BURST = 1 << BURST_B
+    WAIT  = 1 << WAIT_B,
+    BURST = 1 << BURST_B,
+    DONE  = 1 << DONE_B
   } fifo_producer_state_t;
 
 endpackage
