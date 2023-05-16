@@ -33,7 +33,7 @@ module top_tb;
   logic start;
   logic [3:0] epu_mode;
 
-  logic signed [7:0] GOLDEN[200000:0];
+  logic signed [15:0] GOLDEN[200000:0];
   logic [31:0] param [0:3];
   // GOLDEN
   logic signed [7:0] out;
