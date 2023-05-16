@@ -1,17 +1,16 @@
+`include "sync_fifo_consumer_intf.sv"
+`include "sync_fifo_producer_intf.sv"
+
 module sync_fifo #(
     parameter DEPTH = 8,
     parameter WIDTH = 16
 ) (
-    input  logic             clk,
-    rstn,
-    // Supplier side 
-    input  logic             w_en,
-    input  logic [WIDTH-1:0] data_in,
-    output logic             full,
+    input logic                           clk,
+    input logic                           rstn,
+    // Producer side 
+          sync_fifo_producer_intf.to_fifo producer,
     // Consumer side
-    input  logic             r_en,
-    output logic [WIDTH-1:0] data_out,
-    output logic             empty
+          sync_fifo_consumer_intf.to_fifo consumer
 );
 
   logic [$clog2(DEPTH)-1:0] w_ptr, r_ptr;
@@ -22,26 +21,26 @@ module sync_fifo #(
     if (!rstn) begin
       w_ptr <= 0;
       r_ptr <= 0;
-      data_out <= 0;
+      consumer.data_out <= 0;
     end
   end
 
   // To write data to FIFO
   always @(posedge clk) begin
-    if (w_en & !full) begin
-      fifo[w_ptr] <= data_in;
+    if (producer.w_en & !producer.full) begin
+      fifo[w_ptr] <= producer.data_in;
       w_ptr <= w_ptr + 1;
     end
   end
 
   // To read data from FIFO
   always @(posedge clk) begin
-    if (r_en & !empty) begin
-      data_out <= fifo[r_ptr];
+    if (consumer.r_en & !consumer.empty) begin
+      consumer.data_out <= fifo[r_ptr];
       r_ptr <= r_ptr + 1;
     end
   end
 
-  assign full  = ((w_ptr + 1'b1) == r_ptr);
-  assign empty = (w_ptr == r_ptr);
+  assign producer.full  = ((w_ptr + 1'b1) == r_ptr);
+  assign consumer.empty = (w_ptr == r_ptr);
 endmodule

@@ -1,6 +1,6 @@
 `timescale 1ns / 1ns
 `define CYCLE 6.0 // Cycle time
-`define MAX 3000000 // Max cycle number
+`define MAX 300 // Max cycle number
 
 `ifdef SYN
 `include "top_syn.v"

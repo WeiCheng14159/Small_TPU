@@ -1,23 +1,36 @@
+`include "sync_fifo_consumer_intf.sv"
+
 module fifo_consumer
-  import accelerator_pkg::*;
+  import fifo_consumer_pkg::*;
 #(
     parameter WIDTH = 16
 ) (
     input logic clk,
     rstn,
-    input logic    empty,
-    input logic [WIDTH-1:0] from_fifo,
-    output logic r_en,
-    output logic [WIDTH-1:0] to_array
+    // Consumer side
+    sync_fifo_consumer_intf.to_consumer consumer,
+    output logic [WIDTH-1:0] to_systolic_array
 );
 
-  logic [ADDR_WIDTH-1:0] addr;
+  // fifo_consumer_state_t curr_state, next_state;
 
-  assign r_en = 1'b1;
+  // always_ff @(posedge clk) begin
+  //   if (~rstn) curr_state <= IDLE;
+  //   else curr_state <= next_state;
+  // end
 
+  // always_comb begin
+  //   unique case (1'b1)
+  //     curr_state[IDLE_B]: next_state = ~empty ? FEED : IDLE;
+  //     curr_state[FEED_B]: next_state = empty ? IDLE : FEED;
+  //     default: next_state = IDLE;
+  //   endcase
+  // end
+
+  assign consumer.r_en = ~consumer.empty;
   always_ff @(posedge clk) begin
-    if (~rstn) to_array <= {WIDTH{1'b0}};
-    else to_array <= (empty) ? {WIDTH{1'b0}} : from_fifo;
+    if (~rstn) to_systolic_array <= {WIDTH{1'b0}};
+    else if (~consumer.empty) to_systolic_array <= consumer.data_out;
   end
 
 endmodule
