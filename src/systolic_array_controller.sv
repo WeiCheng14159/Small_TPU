@@ -31,8 +31,9 @@ module systolic_array_controller
   systolic_array_state_t sa_curr_state, sa_next_state;
   logic array_step;
   logic [ADDR_WIDTH-1:0] row_base_addr, col_base_addr;
-  logic fifo_enb, row_stall, col_stall;
+  logic soft_rst, row_stall, col_stall, row_done, col_done;
   logic [31:0] blk_idx;
+  logic sa_rstn;
 
   assign row_base_addr = {ADDR_WIDTH{1'b0}};
   assign col_base_addr = {ADDR_WIDTH{1'b0}};
@@ -42,12 +43,13 @@ module systolic_array_controller
     else sa_curr_state <= sa_next_state;
   end
 
-  assign sa_done = 1'b0;  /*(sa_curr_state == SA_FINI)*/
+  assign sa_rstn = ~(sa_curr_state == SA_FINI || sa_curr_state == SA_IDLE);
 
   always_comb begin
     unique case (1'b1)
-      sa_curr_state[SA_IDLE_B]: sa_next_state = (curr_state == S_STREAM) ? SA_COMP : SA_IDLE;
-      sa_curr_state[SA_COMP_B]: sa_next_state = SA_COMP;
+      sa_curr_state[SA_IDLE_B]: sa_next_state = (curr_state == S_STREAM) ? SA_START : SA_IDLE;
+      sa_curr_state[SA_START_B]: sa_next_state = SA_COMP;
+      sa_curr_state[SA_COMP_B]: sa_next_state = (row_done && col_done) ? SA_FINI : SA_COMP;
       sa_curr_state[SA_HALT_B]: sa_next_state = SA_FINI;
       sa_curr_state[SA_FINI_B]: sa_next_state = SA_IDLE;
       default: sa_next_state = SA_IDLE;
@@ -61,7 +63,7 @@ module systolic_array_controller
   ) row_fifo_datapath (
       .*,
       .stall(row_stall),
-      .enb(fifo_enb),
+      .soft_rst(soft_rst),
       .done(row_done),
       .base_addr(row_base_addr),
       .K(K),
@@ -76,7 +78,7 @@ module systolic_array_controller
   ) col_fifo_datapath (
       .*,
       .stall(col_stall),
-      .enb(fifo_enb),
+      .soft_rst(soft_rst),
       .done(col_done),
       .base_addr(col_base_addr),
       .K(K),
@@ -105,7 +107,8 @@ module systolic_array_controller
       .out(out_r)
   );
 
-  assign fifo_enb = (sa_curr_state == SA_COMP);
+  assign soft_rst = (sa_curr_state == SA_START || sa_curr_state == SA_FINI);
+  assign sa_done = (sa_curr_state == SA_FINI);
   assign array_step = ~(row_stall | col_stall);
 
   // blk_row_idx, blk_col_idx

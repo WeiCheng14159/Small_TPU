@@ -13,18 +13,24 @@ module fifo_datapath
 ) (
     input  logic                                         clk,
     input  logic                                         rstn,
-    input  logic                                         enb,
+    input  logic                                         soft_rst,
     output logic                                         stall,
-    done,
+    output logic                                         done,
     input  logic                        [ADDR_WIDTH-1:0] base_addr,
     input  logic                        [          31:0] K,
     output logic                        [DATA_WIDTH-1:0] bus_to_compute[0:TILE_DIM-1],
            single_port_ram_intf.compute                  buffer_intf
 );
 
+  /* Notice that FIFO_DEPTH should be at least 2 times of BURST_SIZE  
+  because a BURST_SIZE amount of data will be pushed into fifo once it 
+  found the fifo is not full (no matter how many vacant slots available.) */
+  localparam BURST_SIZE = 4;
+  localparam FIFO_DEPTH = 8;  // Should be power of 2 
+
   // Bus: fifo consumer <-> systolic array 
   logic [0:TILE_DIM * DATA_WIDTH - 1] bus_to_array;
-  logic [TILE_DIM-1:0] stall_vec, done_vec;
+  logic [TILE_DIM-1:0] stall_vec, feed_vec, done_vec;
 
   // Bus: fifo <-> producer and consumer
   sync_fifo_producer_intf #(.DATA_WIDTH(DATA_WIDTH)) producer_intf[TILE_DIM] ();
@@ -57,7 +63,7 @@ module fifo_datapath
     // fifo
     for (fifo_idx = 0; fifo_idx < TILE_DIM; fifo_idx++) begin : SYNC_FIFO
       sync_fifo #(
-          .DEPTH(8),
+          .DEPTH(FIFO_DEPTH),
           .WIDTH(DATA_WIDTH)
       ) sync_fifo (
           .*,
@@ -71,6 +77,7 @@ module fifo_datapath
           .WIDTH(DATA_WIDTH)
       ) fifo_consumer (
           .*,
+          .feed(feed_vec[fifo_idx]),
           .stall(stall_vec[fifo_idx]),
           .consumer(consumer_intf[fifo_idx]),
           .to_systolic_array(bus_to_compute[fifo_idx])
@@ -87,7 +94,7 @@ module fifo_datapath
       fifo_producer #(
           .DATA_WIDTH(DATA_WIDTH),
           .ADDR_WIDTH(ADDR_WIDTH),
-          .BURST_SIZE(4)
+          .BURST_SIZE(BURST_SIZE)
       ) fifo_producer (
           .*,
           .done(done_vec[fifo_idx]),
@@ -117,6 +124,16 @@ module fifo_datapath
       .sel(select),
       .buff_intf(buffer_intf)
   );
+
+  always_ff @(posedge clk) begin
+    if (~rstn) feed_vec <= {TILE_DIM{1'b0}};
+    else begin
+      feed_vec[0] <= ~stall;  // Not stall means active
+      for (integer idx = 1; idx < TILE_DIM; idx++) begin
+        feed_vec[idx] <= feed_vec[idx-1];
+      end
+    end
+  end
 
   // stall caused by empty fifo
   assign stall = |stall_vec;

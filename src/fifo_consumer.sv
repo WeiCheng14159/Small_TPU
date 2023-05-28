@@ -6,36 +6,24 @@ module fifo_consumer
     parameter WIDTH = 16
 ) (
     input logic clk,
-    rstn,
-    enb,
+    input logic rstn,
+    input logic feed,
     output logic stall,
     // Consumer side
     sync_fifo_consumer_intf.to_consumer consumer,
     output logic [WIDTH-1:0] to_systolic_array
 );
 
-  // fifo_consumer_state_t curr_state, next_state;
+  logic r_valid;
 
-  // always_ff @(posedge clk) begin
-  //   if (~rstn) curr_state <= IDLE;
-  //   else curr_state <= next_state;
-  // end
-
-  // always_comb begin
-  //   unique case (1'b1)
-  //     curr_state[IDLE_B]: next_state = ~empty ? FEED : IDLE;
-  //     curr_state[FEED_B]: next_state = empty ? IDLE : FEED;
-  //     default: next_state = IDLE;
-  //   endcase
-  // end
-
-  // assign consumer.r_en = ~consumer.empty;
-  assign consumer.r_en = (enb & ~consumer.empty);
+  assign consumer.r_en = (feed && ~consumer.empty);
   assign stall = consumer.empty;
+
   always_ff @(posedge clk) begin
-    if (~rstn) to_systolic_array <= {WIDTH{1'b0}};
-    else if (~consumer.empty) to_systolic_array <= consumer.data_out;
-    else to_systolic_array <= {WIDTH{1'b0}};
+    if (~rstn) r_valid <= 1'b0;
+    else r_valid <= consumer.r_en;
   end
+
+  assign to_systolic_array = (r_valid) ? consumer.data_out : {WIDTH{1'b0}};
 
 endmodule

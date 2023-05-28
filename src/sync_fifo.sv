@@ -2,7 +2,7 @@
 `include "sync_fifo_producer_intf.sv"
 
 module sync_fifo #(
-    parameter DEPTH = 8,
+    parameter DEPTH = 8,  // The size of this FIFO is actually (DEPTH-1)
     parameter WIDTH = 16
 ) (
     input logic                           clk,
