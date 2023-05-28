@@ -37,42 +37,52 @@ module fifo_producer
     else curr_state <= next_state;
   end
 
-  assign done = curr_state == DONE;
-  assign request = enb;
+  assign done = (curr_state == DONE);
+  assign request = (curr_state == WAIT || curr_state == BURST) && ~producer.full;
   always_ff @(posedge clk) begin
     if (~rstn) to_buffer_addr <= {ADDR_WIDTH{1'b0}};
-    else if (curr_state == IDLE) to_buffer_addr <= addr_begin;
-    else if (grant) to_buffer_addr <= to_buffer_addr - addr_nstep;
+    else if (curr_state == IDLE && enb) to_buffer_addr <= addr_begin;
+    else if (curr_state == BURST) to_buffer_addr <= to_buffer_addr - addr_nstep;
   end
 
-  assign fifo_ready = (grant && ~done && ~producer.full && enb);
+  assign fifo_ready = (grant && ~producer.full);
   always_comb begin
     unique case (1'b1)
-      curr_state[IDLE_B]: next_state = WAIT;
+      curr_state[IDLE_B]: next_state = (enb) ? WAIT : IDLE;
       curr_state[WAIT_B]: next_state = fifo_ready ? BURST : WAIT;
-      curr_state[BURST_B]:
-      next_state = (burst_cnt == BURST_SIZE) ? (to_buffer_addr == addr_end) ? DONE : WAIT : BURST;
+      curr_state[BURST_B]: begin
+        if (to_buffer_addr == addr_end) next_state = BURST_DONE;
+        else if (burst_cnt == (BURST_SIZE - 1)) next_state = BURST_NDONE;
+        else next_state = BURST;
+      end
+      curr_state[BURST_DONE_B]: next_state = DONE;
+      curr_state[BURST_NDONE_B]: next_state = WAIT;
       curr_state[DONE_B]: next_state = IDLE;
       default: next_state = IDLE;
     endcase
   end
 
   always_ff @(posedge clk) begin
-    if (rstn) burst_cnt <= 0;
-    else if (curr_state == IDLE) burst_cnt <= 0;
-    else if (grant) burst_cnt <= burst_cnt + 1;
+    if (~rstn) burst_cnt <= 0;
+    else if (curr_state == WAIT || curr_state == BURST_DONE || curr_state == BURST_NDONE)
+      burst_cnt <= 0;
+    else if (curr_state == BURST) burst_cnt <= burst_cnt + 1;
   end
 
-  assign producer.w_en = (curr_state == BURST) && ~producer.full;
+  always_ff @(posedge clk) begin
+    if (~rstn) producer.w_en <= 1'b0;
+    else producer.w_en <= (~producer.full && |burst_cnt) ? 1'b1 : 1'b0;
+  end
+
   always_ff @(posedge clk) begin
     if (~rstn) producer.data_in <= {DATA_WIDTH{1'b0}};
-    else if (grant) producer.data_in <= to_buffer_R_data;
-    else producer.data_in <= {DATA_WIDTH{1'b0}};
+    else producer.data_in <= to_buffer_R_data;
   end
 
   assign to_buffer_W_data = accelerator_pkg::EMPTY_DATA;
   assign to_buffer_W_req = single_port_ram_pkg::WREQ_DIS;
-  assign to_buffer_cs = ((curr_state == IDLE) && fifo_ready) || (curr_state == BURST) ? single_port_ram_pkg::CS_ENB: single_port_ram_pkg::CS_DIS;
-  assign to_buffer_oe = ((curr_state == IDLE) && fifo_ready) || (curr_state == BURST) ? single_port_ram_pkg::OE_ENB: single_port_ram_pkg::OE_DIS;
+  assign mem_enb = (curr_state == BURST || curr_state == BURST_DONE || curr_state == BURST_NDONE);
+  assign to_buffer_cs = mem_enb ? single_port_ram_pkg::CS_ENB : single_port_ram_pkg::CS_DIS;
+  assign to_buffer_oe = mem_enb ? single_port_ram_pkg::OE_ENB : single_port_ram_pkg::OE_DIS;
 
 endmodule
